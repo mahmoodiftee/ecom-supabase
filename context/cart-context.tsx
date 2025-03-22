@@ -4,9 +4,9 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 
 type CartItem = {
   id: string
-  name: string
+  title: string
   price: number
-  image_url: string
+  image: string
   quantity: number
 }
 
@@ -67,9 +67,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ...prevItems,
           {
             id: product.id,
-            name: product.title,
+            title: product.title,
             price: product.price,
-            image_url: product.image_url,
+            image: product.image,
             quantity,
           },
         ]

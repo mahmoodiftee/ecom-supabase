@@ -4,8 +4,9 @@ import { useState } from "react"
 import { AnimatePresence } from "framer-motion"
 import ProductCard from "@/components/product-card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Products } from "@/types/products"
 
-export default function ProductGrid({ products }) {
+export default function ProductGrid({ products }: { products: Products[] }) {
   const [sortOrder, setSortOrder] = useState("featured")
 
   const sortedProducts = [...products].sort((a, b) => {
@@ -41,6 +42,5 @@ export default function ProductGrid({ products }) {
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }
-

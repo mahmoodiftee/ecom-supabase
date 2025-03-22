@@ -15,7 +15,7 @@ interface ProductFiltersProps {
   maxPrice?: number
 }
 
-export default function ProductFilters({ categories = [], brands = [], maxPrice = 1000 }: ProductFiltersProps) {
+export default function ProductFilters({  brands = [], maxPrice = 1000 }: ProductFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -43,14 +43,6 @@ export default function ProductFilters({ categories = [], brands = [], maxPrice 
     // Price range
     params.set("minPrice", priceRange[0].toString())
     params.set("maxPrice", priceRange[1].toString())
-
-    // Categories
-    if (selectedCategories.length > 0) {
-      params.set("categories", selectedCategories.join(","))
-    } else {
-      params.delete("categories")
-    }
-
     // Brands
     if (selectedBrands.length > 0) {
       params.set("brands", selectedBrands.join(","))
@@ -139,7 +131,7 @@ export default function ProductFilters({ categories = [], brands = [], maxPrice 
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="category">
+        {/* <AccordionItem value="category">
           <AccordionTrigger>Category</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
@@ -155,7 +147,7 @@ export default function ProductFilters({ categories = [], brands = [], maxPrice 
               ))}
             </div>
           </AccordionContent>
-        </AccordionItem>
+        </AccordionItem> */}
 
         <AccordionItem value="brand">
           <AccordionTrigger>Brand</AccordionTrigger>

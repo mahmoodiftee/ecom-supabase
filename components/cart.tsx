@@ -99,14 +99,14 @@ export function CartDrawer() {
                     <div key={item.id} className="flex gap-4">
                       <div className="h-20 w-20 relative rounded overflow-hidden flex-shrink-0">
                         <Image
-                          src={item.image_url || "/placeholder.svg?height=80&width=80"}
-                          alt={item.name}
+                          src={item.image || "/placeholder.svg?height=80&width=80"}
+                          alt={item.title}
                           fill
                           className="object-cover"
                         />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-medium line-clamp-1">{item.name}</h3>
+                        <h3 className="font-medium line-clamp-1">{item.title}</h3>
                         <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
                         <div className="flex items-center mt-2">
                           <Button
