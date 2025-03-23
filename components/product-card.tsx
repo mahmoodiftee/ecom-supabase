@@ -34,7 +34,13 @@ export default function ProductCard({ product }: { product: Products }) {
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    addItem(product, 1);
+    addItem(
+      {
+        ...product,
+        price: product.price * (1 - product.discount / 100),
+      },
+      1
+    );
     toast({
       title: "Added to cart",
       description: `${product.title} added to your cart`,
@@ -55,7 +61,10 @@ export default function ProductCard({ product }: { product: Products }) {
       <Card className="overflow-hidden h-full transition-all duration-200 hover:shadow-md">
         {/* Centered image container with white background */}
         <div className="aspect-square relative overflow-hidden bg-white flex items-center justify-center">
-          <motion.div className="w-full h-full" layoutId={`product-image-${product.id}`}>
+          <motion.div
+            className="w-full h-full"
+            layoutId={`product-image-${product.id}`}
+          >
             <img
               src={product.image || "/placeholder.svg?height=400&width=400"}
               alt={product.title}
@@ -88,7 +97,7 @@ export default function ProductCard({ product }: { product: Products }) {
               className="font-bold text-lg"
               layoutId={`product-price-${product.id}`}
             >
-              ${product.price?.toFixed(2)}
+              ৳ {(product.price! * (1 - product.discount / 100)).toFixed(2)}
             </motion.p>
             <Button
               size="sm"
@@ -99,7 +108,6 @@ export default function ProductCard({ product }: { product: Products }) {
               data-cart-button
             >
               <ShoppingCart className="h-4 w-4" />
-              <span className="sr-only">Add to cart</span>
             </Button>
           </div>
         </CardContent>

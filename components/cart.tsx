@@ -1,38 +1,52 @@
-"use client"
+"use client";
 
-import { useCart } from "@/context/cart-context"
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ShoppingCart, X, Plus, Minus, Trash2 } from "lucide-react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { useRouter } from "next/navigation"
+import { useCart } from "@/context/cart-context";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingCart, X, Plus, Minus, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useRouter } from "next/navigation";
 
 export function CartIcon() {
-  const { totalItems, setIsOpen, isOpen } = useCart()
+  const { totalItems, setIsOpen, isOpen } = useCart();
 
   return (
-    <button onClick={() => setIsOpen(!isOpen)} className="relative p-2" aria-label="Shopping cart">
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setIsOpen(!isOpen)}
+      aria-label="Shopping cart"
+      className="relative"
+    >
       <ShoppingCart className="h-6 w-6" />
       {totalItems > 0 && (
         <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
           {totalItems}
         </span>
       )}
-    </button>
-  )
+    </Button>
+  );
 }
 
 export function CartDrawer() {
-  const { items, isOpen, setIsOpen, removeItem, updateQuantity, totalPrice, clearCart } = useCart()
-  const [isCheckingOut, setIsCheckingOut] = useState(false)
-  const router = useRouter()
+  const {
+    items,
+    isOpen,
+    setIsOpen,
+    removeItem,
+    updateQuantity,
+    totalPrice,
+    clearCart,
+  } = useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const router = useRouter();
 
   const handleCheckout = async () => {
-    if (items.length === 0) return
+    if (items.length === 0) return;
 
-    setIsCheckingOut(true)
+    setIsCheckingOut(true);
 
     try {
       // Call our API route to create a checkout session
@@ -42,19 +56,19 @@ export function CartDrawer() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ items }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
-      if (!response.ok) throw new Error(data.error || "Something went wrong")
+      if (!response.ok) throw new Error(data.error || "Something went wrong");
 
       // Redirect to checkout page
-      router.push(data.url)
+      router.push(data.url);
     } catch (error) {
-      console.error("Error creating checkout session:", error)
-      setIsCheckingOut(false)
+      console.error("Error creating checkout session:", error);
+      setIsCheckingOut(false);
     }
-  }
+  };
 
   return (
     <AnimatePresence>
@@ -88,41 +102,57 @@ export function CartDrawer() {
               <div className="flex-1 flex flex-col items-center justify-center p-4">
                 <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">Your cart is empty</p>
-                <Button variant="outline" className="mt-4" onClick={() => setIsOpen(false)}>
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => setIsOpen(false)}
+                >
                   Continue Shopping
                 </Button>
               </div>
             ) : (
               <>
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex gap-4">
+                  {items.map((item, i) => (
+                    <div key={i} className="flex gap-4">
                       <div className="h-20 w-20 relative rounded overflow-hidden flex-shrink-0">
                         <Image
-                          src={item.image || "/placeholder.svg?height=80&width=80"}
+                          src={
+                            item.image || "/placeholder.svg?height=80&width=80"
+                          }
                           alt={item.title}
                           fill
                           className="object-cover"
                         />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-medium line-clamp-1">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                        <h3 className="font-medium line-clamp-1">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          ${item.price.toFixed(2)}
+                        </p>
                         <div className="flex items-center mt-2">
                           <Button
                             variant="outline"
                             size="icon"
                             className="h-7 w-7"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity - 1)
+                            }
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="mx-2 w-8 text-center">{item.quantity}</span>
+                          <span className="mx-2 w-8 text-center">
+                            {item.quantity}
+                          </span>
                           <Button
                             variant="outline"
                             size="icon"
                             className="h-7 w-7"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity + 1)
+                            }
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -150,10 +180,18 @@ export function CartDrawer() {
                     <span>Total</span>
                     <span>${totalPrice.toFixed(2)}</span>
                   </div>
-                  <Button className="w-full mb-2" onClick={handleCheckout} disabled={isCheckingOut}>
+                  <Button
+                    className="w-full mb-2"
+                    onClick={handleCheckout}
+                    disabled={isCheckingOut}
+                  >
                     {isCheckingOut ? "Processing..." : "Checkout"}
                   </Button>
-                  <Button variant="outline" className="w-full" onClick={clearCart}>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={clearCart}
+                  >
                     Clear Cart
                   </Button>
                 </div>
@@ -163,6 +201,5 @@ export function CartDrawer() {
         </>
       )}
     </AnimatePresence>
-  )
+  );
 }
-

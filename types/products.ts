@@ -70,6 +70,7 @@ export type Products = {
   id: string;
   title: string;
   image: string;
+  discount: number;
   information: ProductFeature[];
   images: string[];
   price: number;

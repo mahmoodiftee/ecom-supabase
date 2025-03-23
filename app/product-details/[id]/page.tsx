@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -23,10 +24,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/context/cart-context";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
-import { Products } from "@/types/products";
 import { cn } from "@/lib/utils";
+import { useParams } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
+import { Products } from "@/types/products";
 
-export default function ProductDetail({ product }: { product: Products }) {
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+const ProductDetails = () => {
+  const { id } = useParams();
+  const [product, setProduct] = useState<Products | null>(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [prevQuantity, setPrevQuantity] = useState(1); // Track previous quantity
   const { addItem } = useCart();
@@ -39,15 +50,38 @@ export default function ProductDetail({ product }: { product: Products }) {
   const reviewsPerPage = 2;
 
   useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+
+      const { data, error } = await supabase
+        .from("keyboards")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching product:", error.message);
+      } else {
+        setProduct(data);
+        console.log(data);
+      }
+      setLoading(false);
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  useEffect(() => {
     if (headerRef.current) {
       setHeaderHeight(headerRef.current.offsetHeight);
     }
   }, []);
-  const images = product.images || [product.images];
+
+  const images = product?.images || [product?.images];
   const selectedImage = images[selectedImageIndex];
 
   const reviews = product?.reviews || [];
-  // console.log(reviews);
+  console.log(reviews);
   const totalPages = Math.ceil(reviews.length / reviewsPerPage);
   const indexOfLastReview = currentPage * reviewsPerPage;
   const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
@@ -59,9 +93,8 @@ export default function ProductDetail({ product }: { product: Products }) {
       setQuantity(quantity - 1);
     }
   };
-
   const increaseQuantity = () => {
-    if (quantity < (product.quantity || 10)) {
+    if (quantity < (product?.quantity || 10)) {
       setPrevQuantity(quantity); // Update previous quantity
       setQuantity(quantity + 1);
     }
@@ -71,7 +104,7 @@ export default function ProductDetail({ product }: { product: Products }) {
     addItem(product, quantity);
     toast({
       title: "Added to cart",
-      description: `${quantity} × ${product.title} added to your cart`,
+      description: `${quantity} × ${product?.title} added to your cart`,
     });
   };
 
@@ -91,6 +124,10 @@ export default function ProductDetail({ product }: { product: Products }) {
       transition: { duration: 0.5, delay: 0.0 * i },
     }),
   };
+
+  if (loading) return <p>Loading...</p>;
+  if (!product) return <p>Product not found.</p>;
+
   return (
     <div className="min-h-screen md:pb-16 pb-6 relative">
       <div className="hidden md:block w-fit sticky top-16 left-0 z-10">
@@ -105,7 +142,7 @@ export default function ProductDetail({ product }: { product: Products }) {
 
       <div className="flex flex-col md:flex-row">
         <motion.div
-          className="md:w-1/2 md:sticky md:top-[7.5rem] flex flex-col"
+          className="md:w-1/2 md:sticky md:top-[4.5rem] flex flex-col"
           style={{ height: `calc(100vh - ${headerHeight}px)` }}
         >
           <div className="h-full w-full flex-1">
@@ -144,7 +181,7 @@ export default function ProductDetail({ product }: { product: Products }) {
                 >
                   <Image
                     src={
-                      selectedImage || "/placeholder.svg?height=800&width=800"
+                      typeof selectedImage === 'string' ? selectedImage : "/placeholder.svg?height=800&width=800"
                     }
                     alt={`${product.title} - Image ${selectedImageIndex + 1}`}
                     fill
@@ -160,7 +197,7 @@ export default function ProductDetail({ product }: { product: Products }) {
             {images.length > 1 && (
               <div className="p-4 flex justify-center">
                 <div className="flex gap-2 overflow-x-auto max-w-full pb-2">
-                  {images.map((image, index) => (
+                  {images.map((image, index: number) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
@@ -172,7 +209,7 @@ export default function ProductDetail({ product }: { product: Products }) {
                       )}
                     >
                       <Image
-                        src={image || "/placeholder.svg"}
+                        src={typeof image === 'string' ? image : "/placeholder.svg?height=800&width=800"}
                         alt={`${product.title} thumbnail ${index + 1}`}
                         fill
                         className="object-cover"
@@ -185,10 +222,10 @@ export default function ProductDetail({ product }: { product: Products }) {
           </div>
         </motion.div>
 
-        <div className="md:w-1/2 md:overflow-y-auto -mt-32 md:mt-0 px-4 md:px-8 productDetailScroll">
+        <div className="md:w-1/2 md:overflow-y-auto -mt-32 md:mt-0 px-4 md:px-8 md:pt-6 productDetailScroll">
           <div className="max-w-xl mx-auto">
             <motion.h1 className="text-3xl font-bold">
-              {product.title.split(" ").map((word, index) => (
+              {product.title.split("=").map((word: string, index: number) => (
                 <span
                   key={index}
                   className="relative overflow-hidden inline-flex"
@@ -460,7 +497,7 @@ export default function ProductDetail({ product }: { product: Products }) {
               <h2 className="text-xl font-semibold mt-8">Customer Reviews</h2>
               <div className="space-y-4">
                 <AnimatePresence mode="wait">
-                  {currentReviews.map((review) => (
+                  {currentReviews.map((review: any) => (
                     <motion.div
                       key={review.user_id}
                       initial={{ opacity: 0, y: 20 }}
@@ -544,7 +581,7 @@ export default function ProductDetail({ product }: { product: Products }) {
       <div className="flex flex-col gap-4 px-4 md:px-8">
         <h2 className="text-xl font-semibold">Product Details:</h2>
 
-        {product.information?.map((info, index) => (
+        {product.information?.map((info: any, index: number) => (
           <div key={index} className="flex flex-col gap-1">
             <p className="font-medium">{info.feature}</p>
             <p className="text-muted-foreground">{info.value}</p>
@@ -553,4 +590,6 @@ export default function ProductDetail({ product }: { product: Products }) {
       </div>
     </div>
   );
-}
+};
+
+export default ProductDetails;
