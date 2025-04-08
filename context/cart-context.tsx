@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
 
@@ -37,7 +38,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   // Calculate totals
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
@@ -48,7 +48,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    setMounted(true);
     const storedCart = localStorage.getItem("cart");
     if (storedCart) {
       try {
@@ -62,12 +61,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Save cart to localStorage when it changes
   useEffect(() => {
-    if (mounted) {
+    if (items.length > 0) {
       localStorage.setItem("cart", JSON.stringify(items));
     }
-  }, [items, mounted]);
+  }, [items]);
 
-  const addItem = (product: any, quantity: number) => {
+  const addItem = useCallback((product: any, quantity: number) => {
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
 
@@ -94,26 +93,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // Open cart when adding items
     setIsOpen(true);
-  };
+  }, []);
 
-  const removeItem = (id: string) => {
+  const removeItem = useCallback((id: string) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
+  }, []);
 
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(id);
-      return;
-    }
+  const updateQuantity = useCallback(
+    (id: string, quantity: number) => {
+      if (quantity <= 0) {
+        removeItem(id);
+        return;
+      }
 
-    setItems((prevItems) =>
-      prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
-    );
-  };
+      setItems((prevItems) =>
+        prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+      );
+    },
+    [removeItem]
+  );
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
   return (
     <CartContext.Provider

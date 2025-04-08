@@ -44,30 +44,12 @@ export function CartDrawer() {
   const router = useRouter();
 
   const handleCheckout = async () => {
-    if (items.length === 0) return;
-
     setIsCheckingOut(true);
 
-    try {
-      // Call our API route to create a checkout session
-      const response = await fetch("/api/create-checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ items }),
-      });
+    // Redirect to the confirm-payment page with cart data
+    router.push("/confirm-payment");
 
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || "Something went wrong");
-
-      // Redirect to checkout page
-      router.push(data.url);
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
-      setIsCheckingOut(false);
-    }
+    setIsCheckingOut(false);
   };
 
   return (
