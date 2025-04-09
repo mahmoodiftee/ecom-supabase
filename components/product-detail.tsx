@@ -209,7 +209,7 @@ export default function ProductDetail({ product }: { product: Products }) {
             {/* price */}
             <motion.div className="text-2xl mt-2 flex flex-col items-start gap-0">
               {product.discount && (
-                <span className="line-through text-muted-foreground opacity-70 text-base">
+                <span className="line-through text-red-500 opacity-70 text-base font-medium">
                   ৳ {product.price?.toFixed(2)}
                 </span>
               )}
