@@ -87,14 +87,14 @@ export function Search({ keyboards }: SearchProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black z-40"
+            className="fixed inset-0 bg-black z-40 bg-opacity-100"
             onClick={() => setIsSearchOpen(false)}
           />
           <div className="fixed inset-0 flex items-center justify-center z-50">
             <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
               <DialogContent className="bg-white dark:bg-background rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/2 p-6">
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+                  <DialogTitle className="text-xl font-bold mb-4 dark:text-white text-black">
                     Search Products
                   </DialogTitle>
                 </DialogHeader>
@@ -105,7 +105,7 @@ export function Search({ keyboards }: SearchProps) {
                     placeholder="Search..."
                     value={query}
                     onChange={handleSearch}
-                    className="w-full pl-10 pr-4 py-2 bg-transparent text-gray-900 dark:text-white 
+                    className="w-full pl-10 pr-4 py-2 bg-transparent dark:text-white text-black 
                   border-none outline-none ring-0 focus:ring-0 focus:border-none 
                   active:border-none !important"
                   />
@@ -134,17 +134,17 @@ export function Search({ keyboards }: SearchProps) {
                         />
                       </div>
                       <div className="ml-4 flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                        <h3 className="font-semibold dark:text-white text-black">
                           {product.title.slice(0, 50)}...
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {product.description.slice(0, 100)}...
                         </p>
-                        <p className="text-sm font-bold text-gray-900 dark:text-white">
+                        <p className="text-sm font-bold dark:text-white text-black">
                           ${product.price}
                         </p>
                       </div>
-                      <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-gray-900 dark:text-white" />
+                      <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:text-white text-black" />
                     </div>
                   ))}
                 </div>

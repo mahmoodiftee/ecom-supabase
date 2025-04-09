@@ -1,3 +1,4 @@
+import type React from "react";
 import HeaderAuth from "@/components/header-auth";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Geist } from "next/font/google";
@@ -10,8 +11,10 @@ import SmoothScroll from "@/components/SmoothScrollWrapper/SmoothScroll";
 import { Search, SearchButton } from "@/components/search";
 import { CartDrawer, CartIcon } from "@/components/cart";
 import { Toaster } from "@/components/ui/use-toast";
-import { createClient } from "@/utils/supabase/server"; // Import the Supabase client
-import { Products } from "@/types/products"; // Import the Products type
+import { createClient } from "@/utils/supabase/server";
+import type { Products } from "@/types/products";
+import DesktopNav from "@/components/navbars/desktop-nav";
+import MobileNav from "@/components/navbars/mobile-nav";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -27,6 +30,12 @@ const geistSans = Geist({
   display: "swap",
   subsets: ["latin"],
 });
+
+const navlinks = [
+  { title: "products", route: "/products" },
+  { title: "about", route: "/about" },
+  { title: "contact", route: "/contact" },
+];
 
 export default async function RootLayout({
   children,
@@ -52,23 +61,8 @@ export default async function RootLayout({
             <CartProvider>
               <main className="w-full min-h-screen flex flex-col items-center">
                 <div className="flex-1 w-full flex flex-col items-center">
-                  <nav className="sticky top-0 z-50 w-full border-b border-b-foreground/10 h-16 bg-background/80 backdrop-blur-sm">
-                    <Max>
-                      <div className="w-full mx-auto flex justify-between items-center p-3 px-5 text-sm">
-                        <div className="flex gap-5 items-center font-semibold">
-                          <Link href="/" className="text-xl font-bold">
-                            LOGO
-                          </Link>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <SearchButton />
-                          <CartIcon />
-                          <HeaderAuth />
-                          <ThemeSwitcher />
-                        </div>
-                      </div>
-                    </Max>
-                  </nav>
+                  <DesktopNav navlinks={navlinks} />
+                  <MobileNav navlinks={navlinks} />
                   <Max>{children}</Max>
                   <CartDrawer />
                   <Search keyboards={keyboards || []} />
@@ -82,3 +76,7 @@ export default async function RootLayout({
     </html>
   );
 }
+
+
+
+
