@@ -72,7 +72,7 @@ const products = [
     id: 5,
     name: "Skadis Pegboard",
     image:
-      "https://i.postimg.cc/8CjS60TQ/skadis-pegboard-combination-black-1242045-pe920045-s5.webp",
+      "https://i.postimg.cc/85zhRpWy/pegboard.png",
     description:
       "A perfect way to get organised and keep smaller items close at hand anywhere in the home. Create your own combination of SKÅDIS pegboard and SKÅDIS accessories or choose this ready-made combination.",
   },
