@@ -16,7 +16,7 @@ interface DesktopNavProps {
 
 export default function DesktopNav({ navlinks }: DesktopNavProps) {
   return (
-    <nav className="hidden md:block sticky top-2 z-50 w-full md:w-3/4 h-16 bg-foreground/5 border border-foreground/10 bg-opacity-80 backdrop-blur-sm rounded-full">
+    <nav className="hidden md:block sticky top-2 z-50 w-full max-w-[1340px] mx-auto h-16 bg-foreground/5 border border-foreground/10 bg-opacity-80 backdrop-blur-sm rounded-full">
       <div className="w-full mx-auto flex justify-between items-center p-3 px-5 text-sm">
         <div className="flex items-center font-semibold">
           <Link href="/" className="text-xl font-bold">

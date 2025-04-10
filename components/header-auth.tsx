@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { User } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { User } from "lucide-react";
 
 export default function HeaderAuth() {
   // For demo purposes, we'll just show a sign in button
@@ -10,24 +10,12 @@ export default function HeaderAuth() {
     <div className="flex items-center gap-4">
       <Button variant="secondary" size="sm" asChild>
         <Link href="#" className="flex items-center gap-1">
-          <User className="h-4 w-4" />
-          <span>Sign In</span>
+          <User className="h-6 w-6" />
         </Link>
       </Button>
     </div>
-  )
+  );
 }
-
-
-
-
-
-
-
-
-
-
-
 
 // import { signOutAction } from "@/app/actions";
 // import { hasEnvVars } from "@/utils/supabase/check-env-vars";
@@ -99,5 +87,3 @@ export default function HeaderAuth() {
 //     </div>
 //   );
 // }
-
-
