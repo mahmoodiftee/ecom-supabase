@@ -38,7 +38,7 @@ const categories = [
   {
     id: 5,
     title: "Desk mat",
-    image: "/mat.png",
+    image: "/matt.png",
     href: "/category/monitors",
     size: "medium-wide",
   },

@@ -8,7 +8,7 @@ export default function HeaderAuth() {
   // For demo purposes, we'll just show a sign in button
   return (
     <div className="flex items-center gap-4">
-      <Button variant="secondary" size="sm" asChild>
+      <Button variant="ghost" size="sm" asChild>
         <Link href="#" className="flex items-center gap-1">
           <User className="h-6 w-6" />
         </Link>
