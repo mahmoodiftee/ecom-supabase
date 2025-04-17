@@ -1,4 +1,5 @@
 import CategoryBentoGrid from "./HomeComponents/Category";
+import { ScrollingCards } from "./HomeComponents/FeatureStacking/page";
 import FeatureSection from "./HomeComponents/FreatureSection/page";
 import Hero from "./HomeComponents/Hero";
 
@@ -66,11 +67,12 @@ const HomePage = () => {
     <section>
       <Hero />
       <CategoryBentoGrid />
+      <ScrollingCards />
       <FeatureSection section={Keyboards} position="left" />
       <FeatureSection section={Switches} position="right" />
-      <FeatureSection section={Keycaps} position="left" />
+      {/* <FeatureSection section={Keycaps} position="left" />
       <FeatureSection section={Pegboards} position="right" />
-      <FeatureSection section={DeskMat} position="left" />
+      <FeatureSection section={DeskMat} position="left" /> */}
     </section>
   );
 };

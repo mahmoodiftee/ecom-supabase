@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { SectionHeading } from "@/components/ui/Typography";
 
 interface SectionProps {
   images: string[];
@@ -98,14 +99,14 @@ export default function FeatureSection({
       initial="hidden"
       animate={hasAnimatedIn ? "visible" : "hidden"}
       variants={containerVariants}
-      className="w-full min-h-screen flex flex-col justify-center"
+      className="w-full flex flex-col justify-center bg-foreground/5 rounded-2xl my-6 p-6"
     >
-      <div className="container mx-auto px-4">
+      <div className="mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div
-            className={`relative h-[500px] overflow-hidden rounded-lg shadow-lg ${imageOrder}`}
+            className={`relative h-[500px] overflow-hidden rounded-lg ${imageOrder}`}
           >
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence custom={currentImageIndex}>
               <motion.div
                 key={currentImageIndex}
                 initial={{ x: "100%" }}
@@ -113,14 +114,28 @@ export default function FeatureSection({
                 exit={{ x: "-100%" }}
                 transition={{
                   duration: 0.7,
-                  ease: "linear",
+                  ease: [0.32, 0.72, 0, 1],
                 }}
                 className="absolute inset-0 w-full h-full"
+                style={{
+                  // Remove any potential gaps
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
               >
                 <img
                   src={section.images[currentImageIndex] || "/placeholder.svg"}
                   alt={`Slide ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
+                  style={{
+                    // Ensure image fills the container completely
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                  }}
                 />
               </motion.div>
             </AnimatePresence>
@@ -130,19 +145,19 @@ export default function FeatureSection({
                 <div key={index} className="flex items-center">
                   {index === currentImageIndex ? (
                     <motion.div
-                      className="h-2 bg-primary rounded-full"
+                      className="h-2 bg-white dark:bg-black rounded-full"
                       initial={{ width: 8 }}
                       animate={{ width: 60 }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
                     >
                       <motion.div
-                        className="h-full bg-white rounded-full"
+                        className="h-full bg-black dark:bg-white rounded-full"
                         style={{ width: `${progress}%` }}
                       />
                     </motion.div>
                   ) : (
                     <motion.div
-                      className="h-2 w-2 bg-white/70 rounded-full"
+                      className="h-2 w-2 bg-black/70 dark:bg-white/70 rounded-full"
                       initial={{
                         width:
                           index ===
@@ -161,10 +176,10 @@ export default function FeatureSection({
           </div>
 
           <div className={`flex flex-col space-y-6 ${contentOrder}`}>
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              {section.title}
-            </h2>
-            <p className="text-muted-foreground text-lg">
+            <div className="text-3xl font-bold tracking-tight md:text-4xl">
+             <SectionHeading>{section.title}</SectionHeading> 
+            </div>
+            <p className="text-muted-foreground text-lg w-5/6">
               {section.description}
             </p>
             <div>

@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
       "img.freepik.com",
       "drop.com",
       "www.ultratech.com.bd",
+      "images.unsplash.com",
     ],
   },
 };
