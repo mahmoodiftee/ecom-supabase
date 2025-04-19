@@ -66,7 +66,7 @@ const HomePage = () => {
   return (
     <section>
       <Hero />
-      <CategoryBentoGrid />
+      {/* <CategoryBentoGrid /> */}
       <ScrollingCards />
       <FeatureSection section={Keyboards} position="left" />
       <FeatureSection section={Switches} position="right" />

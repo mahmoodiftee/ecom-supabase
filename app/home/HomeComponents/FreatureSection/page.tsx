@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/Typography";
 
 interface SectionProps {
+  // id: string;
   images: string[];
   title: string;
   description: string;
@@ -99,7 +100,7 @@ export default function FeatureSection({
       initial="hidden"
       animate={hasAnimatedIn ? "visible" : "hidden"}
       variants={containerVariants}
-      className="w-full flex flex-col justify-center bg-foreground/5 rounded-2xl my-6 p-6"
+      className="w-full flex flex-col justify-center"
     >
       <div className="mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -127,14 +128,17 @@ export default function FeatureSection({
               >
                 <img
                   src={section.images[currentImageIndex] || "/placeholder.svg"}
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
                   alt={`Slide ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
                   style={{
                     // Ensure image fills the container completely
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    objectPosition: 'center',
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "center",
                   }}
                 />
               </motion.div>
@@ -177,7 +181,7 @@ export default function FeatureSection({
 
           <div className={`flex flex-col space-y-6 ${contentOrder}`}>
             <div className="text-3xl font-bold tracking-tight md:text-4xl">
-             <SectionHeading>{section.title}</SectionHeading> 
+              <SectionHeading>{section.title}</SectionHeading>
             </div>
             <p className="text-muted-foreground text-lg w-5/6">
               {section.description}

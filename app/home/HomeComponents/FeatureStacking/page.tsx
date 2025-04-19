@@ -2,32 +2,68 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import Image from "next/image";
+import FeatureSection from "../FreatureSection/page";
 
 const cardData = [
   {
     id: 1,
-    title: "Card 1",
+    images: [
+      "https://i.postimg.cc/GhKCMSJN/keyboard.png",
+      "https://i.postimg.cc/GhKCMSJN/keyboard.png",
+      "https://i.postimg.cc/GhKCMSJN/keyboard.png",
+      "https://i.postimg.cc/GhKCMSJN/keyboard.png",
+    ],
+    title: "Mechanical Keyboards",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab dicta error nam eaque. Eum fuga laborum quos expedita iste saepe similique, unde possimus quia at magnam sed cupiditate? Reprehenderit, harum!",
-    image:
-      "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=100",
+      "Premium mechanical keyboards built for performance, durability, and style. Perfect for gamers, coders, and enthusiasts looking for the ultimate typing experience with quality builds and customizable layouts.",
   },
   {
     id: 2,
-    title: "Card 2",
+    images: [
+      "https://i.postimg.cc/VLmwWcMn/switch.png",
+      "https://i.postimg.cc/VLmwWcMn/switch.png",
+      "https://i.postimg.cc/VLmwWcMn/switch.png",
+      "https://i.postimg.cc/VLmwWcMn/switch.png",
+    ],
+    title: "Switches",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab dicta error nam eaque. Eum fuga laborum quos expedita iste saepe similique, unde possimus quia at magnam sed cupiditate? Reprehenderit, harum!",
-    image:
-      "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=100",
+      "A wide range of mechanical switches, including tactile, linear, and clicky types. Choose the perfect feel and sound for your typing or gaming preferences—smooth, responsive, and built to last.",
   },
   {
     id: 3,
-    title: "Card 3",
+    images: [
+      "https://i.postimg.cc/t4gH8tBg/keycaps.png",
+      "https://i.postimg.cc/t4gH8tBg/keycaps.png",
+      "https://i.postimg.cc/t4gH8tBg/keycaps.png",
+      "https://i.postimg.cc/t4gH8tBg/keycaps.png",
+    ],
+    title: "Keycaps",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab dicta error nam eaque. Eum fuga laborum quos expedita iste saepe similique, unde possimus quia at magnam sed cupiditate? Reprehenderit, harum!",
-    image:
-      "https://images.unsplash.com/photo-1620207418302-439b387441b0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=100",
+      "High-quality keycaps in various profiles, materials, and colors. Upgrade your keyboard’s look and feel with stylish designs that match your aesthetic and typing needs.",
+  },
+  {
+    id: 4,
+    images: [
+      "https://i.postimg.cc/Hs6W85bM/mu-3-XL-redfluid-TU-mit-tasta-shop.webp",
+      "https://i.postimg.cc/Hs6W85bM/mu-3-XL-redfluid-TU-mit-tasta-shop.webp",
+      "https://i.postimg.cc/Hs6W85bM/mu-3-XL-redfluid-TU-mit-tasta-shop.webp",
+      "https://i.postimg.cc/Hs6W85bM/mu-3-XL-redfluid-TU-mit-tasta-shop.webp",
+    ],
+    title: "Desk Mats",
+    description:
+      "Durable and smooth desk mats that add comfort and flair to your workspace. Made with stitched edges and anti-slip backing, ideal for daily use and full-desk coverage.",
+  },
+  {
+    id: 5,
+    images: [
+      "https://i.postimg.cc/85zhRpWy/pegboard.png",
+      "https://i.postimg.cc/85zhRpWy/pegboard.png",
+      "https://i.postimg.cc/85zhRpWy/pegboard.png",
+      "https://i.postimg.cc/85zhRpWy/pegboard.png",
+    ],
+    title: "Pegboards",
+    description:
+      "Functional and stylish pegboards designed for workspace organization. Hang cables, tools, or display your gear with ease—great for streamers and tech lovers alike.",
   },
 ];
 
@@ -51,11 +87,12 @@ interface CardProps {
     id: number;
     title: string;
     description: string;
-    image: string;
+    images: string[];
   };
   index: number;
   totalCards: number;
 }
+
 
 function Card({ card, index, totalCards }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -67,13 +104,11 @@ function Card({ card, index, totalCards }: CardProps) {
     offset: ["start end", "end start"],
   });
 
-  // Scale from 1 to 0.9 for all cards except the last one
   const scale = useTransform(
     scrollYProgress,
-    [0, 1],
-    [1, index === totalCards - 1 ? 0.9 : 0.85]
+    [0.3, 1],
+    [1.05, index === totalCards - 1 ? 0.85 : 0.85]
   );
-
 
   return (
     <div
@@ -81,34 +116,19 @@ function Card({ card, index, totalCards }: CardProps) {
       className="sticky top-20"
       style={{
         paddingTop: `${offsetTop}px`,
-        marginBottom: "40px",
-        height: index === totalCards - 1 ? "auto" : "500px",
+        marginBottom: index === totalCards - 1 ? "250px" : "0",
+        height: index === totalCards - 1 ? "500px" : "500px",
       }}
     >
       <motion.div
         ref={cardRef}
-        className="bg-white rounded-[14px] flex overflow-hidden shadow-lg origin-top md:flex-row flex-col"
+        className="flex overflow-hidden shadow-lg origin-top md:flex-row flex-col border border-[#eaeaea]
+         dark:border-[#3f3f3f] bg-[#F2F2F2] dark:bg-[#2B2B2B] rounded-2xl my-6 p-6"
         style={{
           scale,
         }}
       >
-        <div className="md:w-2/5 w-full flex-shrink-0">
-          <Image
-            src={card.image || "/placeholder.svg"}
-            alt=""
-            width={400}
-            height={400}
-            className="w-full h-full object-cover md:aspect-square aspect-[16/9]"
-          />
-        </div>
-        <div className="p-5 md:p-[30px_40px] flex flex-col">
-          <h1 className="p-0 m-0 text-[32px] md:text-[60px] font-semibold text-[#16263a]">
-            {card.title}
-          </h1>
-          <p className="leading-[1.4] text-base md:text-2xl text-[#16263a]">
-            {card.description}
-          </p>
-        </div>
+        <FeatureSection section={card} position={index % 2 === 0 ? "right" : "left"} />
       </motion.div>
     </div>
   );

@@ -155,7 +155,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="w-full relative overflow-hidden">
+    <section className="w-full relative overflow-hidden min-h-[76vh]">
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center relative">
         <motion.img
           src="https://i.postimg.cc/JnC1ZCKD/switch.png"
