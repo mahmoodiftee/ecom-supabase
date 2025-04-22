@@ -1,20 +1,15 @@
 import type React from "react";
-import HeaderAuth from "@/components/header-auth";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import Link from "next/link";
 import "./globals.css";
-import Max from "@/components/max";
 import { CartProvider } from "@/context/cart-context";
 import SmoothScroll from "@/components/SmoothScrollWrapper/SmoothScroll";
-import { Search, SearchButton } from "@/components/search";
-import { CartDrawer, CartIcon } from "@/components/cart";
+import { CartDrawer } from "@/components/cart";
 import { Toaster } from "@/components/ui/use-toast";
-import { createClient } from "@/utils/supabase/server";
-import type { Products } from "@/types/products";
 import DesktopNav from "@/components/navbars/desktop-nav";
 import MobileNav from "@/components/navbars/mobile-nav";
+import SearchWrapper from "@/components/SearchWrapper";
+import Max from "@/components/max";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -22,8 +17,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "",
+  description: "",
 };
 
 const geistSans = Geist({
@@ -42,12 +37,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch keyboards data from Supabase
-  const supabase = await createClient();
-  const { data: keyboards } = await supabase
-    .from("keyboards")
-    .select<"keyboards", Products>();
-
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
@@ -63,9 +52,10 @@ export default async function RootLayout({
                 <div className="flex-1 w-full flex flex-col items-center">
                   <DesktopNav navlinks={navlinks} />
                   <MobileNav navlinks={navlinks} />
-                  <Max>{children}</Max>
+                  {/* <Max>{children}</Max> */}
+                  {children}
                   <CartDrawer />
-                  <Search keyboards={keyboards || []} />
+                  {/* <SearchWrapper /> */}
                   <Toaster />
                 </div>
               </main>
@@ -76,7 +66,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-
-
-

@@ -1,80 +1,79 @@
-import CategoryBentoGrid from "./HomeComponents/Category";
+"use client";
+import HumanoidSection from "./HomeComponents/CardStack/page";
+import CustomKeyscaps from "./HomeComponents/Custom Keycaps/CustomKeyscaps";
 import { ScrollingCards } from "./HomeComponents/FeatureStacking/page";
-import FeatureSection from "./HomeComponents/FreatureSection/page";
+import Footer from "./HomeComponents/Footer/Footer";
 import Hero from "./HomeComponents/Hero";
-
-const Keyboards = {
-  images: [
-    "https://i.postimg.cc/GhKCMSJN/keyboard.png",
-    "https://i.postimg.cc/GhKCMSJN/keyboard.png",
-    "https://i.postimg.cc/GhKCMSJN/keyboard.png",
-    "https://i.postimg.cc/GhKCMSJN/keyboard.png",
-  ],
-  title: "Mechanical Keyboards",
-  description:
-    "Premium mechanical keyboards built for performance, durability, and style. Perfect for gamers, coders, and enthusiasts looking for the ultimate typing experience with quality builds and customizable layouts.",
-};
-const Switches = {
-  images: [
-    "https://i.postimg.cc/VLmwWcMn/switch.png",
-    "https://i.postimg.cc/VLmwWcMn/switch.png",
-    "https://i.postimg.cc/VLmwWcMn/switch.png",
-    "https://i.postimg.cc/VLmwWcMn/switch.png",
-  ],
-  title: "Switches",
-  description:
-    "A wide range of mechanical switches, including tactile, linear, and clicky types. Choose the perfect feel and sound for your typing or gaming preferences—smooth, responsive, and built to last.",
-};
-
-const Keycaps = {
-  images: [
-    "https://i.postimg.cc/t4gH8tBg/keycaps.png",
-    "https://i.postimg.cc/t4gH8tBg/keycaps.png",
-    "https://i.postimg.cc/t4gH8tBg/keycaps.png",
-    "https://i.postimg.cc/t4gH8tBg/keycaps.png",
-  ],
-  title: "Keycaps",
-  description:
-    "High-quality keycaps in various profiles, materials, and colors. Upgrade your keyboard’s look and feel with stylish designs that match your aesthetic and typing needs.",
-};
-
-const DeskMat = {
-  images: [
-    "https://i.postimg.cc/Hs6W85bM/mu-3-XL-redfluid-TU-mit-tasta-shop.webp",
-    "https://i.postimg.cc/Hs6W85bM/mu-3-XL-redfluid-TU-mit-tasta-shop.webp",
-    "https://i.postimg.cc/Hs6W85bM/mu-3-XL-redfluid-TU-mit-tasta-shop.webp",
-    "https://i.postimg.cc/Hs6W85bM/mu-3-XL-redfluid-TU-mit-tasta-shop.webp",
-  ],
-  title: "Desk Mats",
-  description:
-    "Durable and smooth desk mats that add comfort and flair to your workspace. Made with stitched edges and anti-slip backing, ideal for daily use and full-desk coverage.",
-};
-
-const Pegboards = {
-  images: [
-    "https://i.postimg.cc/85zhRpWy/pegboard.png",
-    "https://i.postimg.cc/85zhRpWy/pegboard.png",
-    "https://i.postimg.cc/85zhRpWy/pegboard.png",
-    "https://i.postimg.cc/85zhRpWy/pegboard.png",
-  ],
-  title: "Pegboards",
-  description:
-    "Functional and stylish pegboards designed for workspace organization. Hang cables, tools, or display your gear with ease—great for streamers and tech lovers alike.",
-};
 
 const HomePage = () => {
   return (
-    <section>
+    <div>
       <Hero />
-      {/* <CategoryBentoGrid /> */}
       <ScrollingCards />
-      <FeatureSection section={Keyboards} position="left" />
-      <FeatureSection section={Switches} position="right" />
-      {/* <FeatureSection section={Keycaps} position="left" />
-      <FeatureSection section={Pegboards} position="right" />
-      <FeatureSection section={DeskMat} position="left" /> */}
-    </section>
+      <HumanoidSection />
+      <Footer />
+    </div>
   );
 };
 
 export default HomePage;
+
+// <div
+// className="lg:w-1/3"
+// >
+// <div className={`flex flex-col space-y-6 mb-6`}>
+//   <div className="text-3xl font-bold tracking-tight md:text-4xl">
+//     <SectionHeading>Custom Keycaps</SectionHeading>
+//   </div>
+//   <p className="text-muted-foreground text-lg w-5/6">
+//     Premium custom keycaps crafted for mechanical keyboard
+//     enthusiasts. Choose from a variety of profiles and designs to
+//     elevate your typing experience.
+//   </p>
+// </div>
+
+// <div className="flex gap-4 mb-12">
+//   <button
+//     className={`w-12 h-12 rounded-lg shadow-md transition-all ${
+//       activeKeycapSet === "gmk-botanical"
+//         ? "ring-2 ring-purple-500 ring-offset-2"
+//         : "opacity-70 hover:opacity-100"
+//     }`}
+//     onClick={() => setActiveKeycapSet("gmk-botanical")}
+//     style={{
+//       background: "linear-gradient(135deg, #9eb384 0%, #435334 100%)",
+//     }}
+//     aria-label="GMK Botanical"
+//   />
+//   <button
+//     className={`w-12 h-12 rounded-lg shadow-md transition-all ${
+//       activeKeycapSet === "gmk-laser"
+//         ? "ring-2 ring-purple-500 ring-offset-2"
+//         : "opacity-70 hover:opacity-100"
+//     }`}
+//     onClick={() => setActiveKeycapSet("gmk-laser")}
+//     style={{
+//       background: "linear-gradient(135deg, #ff71ce 0%, #01cdfe 100%)",
+//     }}
+//     aria-label="GMK Laser"
+//   />
+//   <button
+//     className={`w-12 h-12 rounded-lg shadow-md transition-all ${
+//       activeKeycapSet === "sa-bliss"
+//         ? "ring-2 ring-purple-500 ring-offset-2"
+//         : "opacity-70 hover:opacity-100"
+//     }`}
+//     onClick={() => setActiveKeycapSet("sa-bliss")}
+//     style={{
+//       background: "linear-gradient(135deg, #f9c5d1 0%, #9795ef 100%)",
+//     }}
+//     aria-label="SA Bliss"
+//   />
+// </div>
+
+// <Link href="/keycaps">
+//   <Button className="bg-purple-600 hover:bg-purple-700">
+//     View All Keycaps <ArrowRight className="ml-2 h-4 w-4" />
+//   </Button>
+// </Link>
+// </div>

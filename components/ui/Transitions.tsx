@@ -1,6 +1,6 @@
 "use client";
 
-import { HTMLMotionProps, motion } from "framer-motion";
+import { HTMLMotionProps, motion, useInView } from "framer-motion";
 import { HTMLAttributes, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
@@ -85,22 +85,23 @@ export const OpacityTextReveal = (props: HTMLAttributes<HTMLSpanElement>) => {
 };
 
 export const OpacityTransition = ({ children }: { children: string }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: false });
+
   return (
-    <div className="overflow-hidden ">
+    <div className="overflow-hidden" ref={ref}>
       {children.split("").map((char, i) => (
         <motion.span
-          initial={{ opacity: 0.1 }}
-          animate={{ opacity: 1 }}
-          layout
-          transition={{ delay: i * 0.03, ease: [0.215, 0.61, 0.355, 1] }}
-          exit={{
-            y: 0,
-            transition: { delay: i * 0.02, ease: [0.215, 0.61, 0.355, 1] },
-          }}
           key={i}
           className="inline-block"
+          initial={{ opacity: 0.1 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0.1 }}
+          transition={{
+            delay: i * 0.03,
+            ease: [0.215, 0.61, 0.355, 1],
+          }}
         >
-          {char}
+          {char === " " ? "\u00A0" : char}
         </motion.span>
       ))}
     </div>

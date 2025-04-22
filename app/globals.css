@@ -71,3 +71,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+[data-perspective="1000"] {
+  perspective: 1000px;
+}
+
+.grid-cols-15 {
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+}
+
+.grid-rows-5 {
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+}

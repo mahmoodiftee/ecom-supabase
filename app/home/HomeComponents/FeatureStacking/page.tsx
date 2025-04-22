@@ -3,6 +3,8 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import FeatureSection from "../FreatureSection/page";
+import Max from "@/components/max";
+import { OpacityTransition } from "@/components/ui/Transitions";
 
 const cardData = [
   {
@@ -70,14 +72,19 @@ const cardData = [
 export function ScrollingCards() {
   return (
     <div className="w-full">
-      {cardData.map((card, index) => (
-        <Card
-          key={card.id}
-          card={card}
-          index={index}
-          totalCards={cardData.length}
-        />
-      ))}
+      <Max>
+        <div className="text-7xl font-extrabold text-center">
+          <OpacityTransition>We Offer</OpacityTransition>
+        </div>
+        {cardData.map((card, index) => (
+          <Card
+            key={card.id}
+            card={card}
+            index={index}
+            totalCards={cardData.length}
+          />
+        ))}
+      </Max>
     </div>
   );
 }
@@ -92,7 +99,6 @@ interface CardProps {
   index: number;
   totalCards: number;
 }
-
 
 function Card({ card, index, totalCards }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -128,7 +134,10 @@ function Card({ card, index, totalCards }: CardProps) {
           scale,
         }}
       >
-        <FeatureSection section={card} position={index % 2 === 0 ? "right" : "left"} />
+        <FeatureSection
+          section={card}
+          position={index % 2 === 0 ? "right" : "left"}
+        />
       </motion.div>
     </div>
   );

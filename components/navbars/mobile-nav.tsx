@@ -50,7 +50,7 @@ export default function MobileNav({ navlinks }: MobileNavProps) {
     <div className="lg:hidden w-full mx-auto flex justify-between items-center pl-2 mt-4">
       <div className="relative z-50 flex items-center font-semibold">
         <Link href="/" className="text-xl font-bold">
-          LOGO
+          KEEBHOUS
         </Link>
       </div>
       <div className="w-full mx-auto flex justify-end items-center text-sm">

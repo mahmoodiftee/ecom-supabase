@@ -20,7 +20,7 @@ export default function DesktopNav({ navlinks }: DesktopNavProps) {
       <div className="w-full mx-auto flex justify-between items-center p-3 px-5 text-sm">
         <div className="flex items-center font-semibold">
           <Link href="/" className="text-xl font-bold">
-            LOGO
+            KEEBHOUS
           </Link>
         </div>
         <div className="hidden lg:flex gap-8 items-center font-semibold pl-20">

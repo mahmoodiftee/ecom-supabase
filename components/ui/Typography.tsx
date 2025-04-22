@@ -100,7 +100,7 @@ export function PerspectiveText({
         initial={{ y: "100%" }}
         animate={{ y: hover ? 0 : "100%" }}
         layout
-        transition={{ delay: 0.2, ease: [0.215, 0.61, 0.355, 1] }}
+        transition={{  duration: 1,  delay: 0.2, ease: [0.215, 0.61, 0.355, 1] }}
         className="absolute left-0 top-0 py-2"
       >
         {children}
@@ -131,7 +131,7 @@ export const TextAnimation = ({
             animate={inView ? "open" : "closed"}
             className=""
           >
-            {word + " "}
+            {word + "  "}
           </motion.span>
         </span>
       ))}
