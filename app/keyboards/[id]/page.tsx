@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
 import ProductDetail from "@/components/product-detail";
-import { createClient } from "@/utils/supabase/server";
+import { supabasePublic } from "@/utils/supabase/publicClient";
 
 export default async function KeyboardsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const supabase = await createClient();
-  const { data: keyboards, error } = await supabase
+  const { data: keyboards, error } = await supabasePublic
     .from("keyboards")
     .select("*"); // Retrieve all columns
 

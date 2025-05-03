@@ -8,8 +8,10 @@ import { CartDrawer } from "@/components/cart";
 import { Toaster } from "@/components/ui/use-toast";
 import DesktopNav from "@/components/navbars/desktop-nav";
 import MobileNav from "@/components/navbars/mobile-nav";
-import SearchWrapper from "@/components/SearchWrapper";
-import Max from "@/components/max";
+import { UserProvider } from "@/context/UserContext";
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+import { headers } from "next/headers";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -27,9 +29,9 @@ const geistSans = Geist({
 });
 
 const navlinks = [
-  { title: "products", route: "/products" },
-  { title: "about", route: "/about" },
-  { title: "contact", route: "/contact" },
+  { title: "Keyboards", route: "/keyboards" },
+  { title: "About", route: "/about" },
+  { title: "Contact", route: "/contact" },
 ];
 
 export default async function RootLayout({
@@ -37,9 +39,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
-      <body className="bg-background text-foreground">
+      <body className="bg-background text-foreground" cz-shortcut-listen="false">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -48,17 +52,17 @@ export default async function RootLayout({
         >
           <SmoothScroll>
             <CartProvider>
-              <main className="w-full min-h-screen flex flex-col items-center">
-                <div className="flex-1 w-full flex flex-col items-center">
-                  <DesktopNav navlinks={navlinks} />
-                  <MobileNav navlinks={navlinks} />
-                  {/* <Max>{children}</Max> */}
-                  {children}
-                  <CartDrawer />
-                  {/* <SearchWrapper /> */}
-                  <Toaster />
-                </div>
-              </main>
+              <UserProvider>
+                <main className="w-full min-h-screen flex flex-col items-center">
+                  <div className="flex-1 w-full flex flex-col items-center">
+                    <DesktopNav navlinks={navlinks} />
+                    <MobileNav navlinks={navlinks} />
+                    {children}
+                    <CartDrawer />
+                    <Toaster />
+                  </div>
+                </main>
+              </UserProvider>
             </CartProvider>
           </SmoothScroll>
         </ThemeProvider>

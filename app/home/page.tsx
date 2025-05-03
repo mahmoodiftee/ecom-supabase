@@ -1,11 +1,11 @@
 "use client";
 import HumanoidSection from "./HomeComponents/CardStack/page";
-import CustomKeyscaps from "./HomeComponents/Custom Keycaps/CustomKeyscaps";
 import { ScrollingCards } from "./HomeComponents/FeatureStacking/page";
 import Footer from "./HomeComponents/Footer/Footer";
 import Hero from "./HomeComponents/Hero";
 
 const HomePage = () => {
+
   return (
     <div>
       <Hero />

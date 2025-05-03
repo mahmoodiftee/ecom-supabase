@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Max from "../max";
 import { SearchButton } from "../search";
 import { CartIcon } from "../cart";
 import HeaderAuth from "../header-auth";
