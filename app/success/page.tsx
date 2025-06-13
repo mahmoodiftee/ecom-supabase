@@ -7,8 +7,11 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { generateReceipt } from "@/lib/pdf-generator";
 import Max from "@/components/max";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Download, ListOrdered, ShoppingBag, User } from "lucide-react";
+import Link from "next/link";
 interface CheckmarkProps {
   size?: number;
   strokeWidth?: number;
@@ -93,18 +96,20 @@ export function Checkmark({
 }
 
 export default function SuccessPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [items, setItems] = useState<any[]>([]);
+  const [totalPrice, setTotalPrice] = useState(0);
 
-  // Get items from URL if they exist
-  const urlItems = searchParams.get("items");
-  const urlTotal = searchParams.get("total");
+  useEffect(() => {
+    const orderData = localStorage.getItem("order");
+    if (orderData) {
+      const { items, totalPrice } = JSON.parse(orderData);
+      setItems(items);
+      setTotalPrice(totalPrice);
+    } else {
+      console.log("No order found in localStorage");
+    }
+  }, []);
 
-  const { items: cartItems, totalPrice } = useCart();
-
-  // Use URL items if available, otherwise fall back to cart
-  const items = urlItems ? JSON.parse(urlItems) : cartItems;
-  const total = urlTotal ? parseFloat(urlTotal) : totalPrice;
 
   const details = {
     receiptNumber: "REC-2025-001",
@@ -119,6 +124,7 @@ export default function SuccessPage() {
     companyWebsite: "www.capekeys.com",
     notes: "Thank you for your business!",
   };
+  console.log(Math.round(totalPrice));
   const handleDownloadReceipt = () => {
     generateReceipt(items, totalPrice, details);
   };
@@ -184,7 +190,18 @@ export default function SuccessPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.4 }}
             >
-              <Button className="mb-2" onClick={handleDownloadReceipt}>Download Receipt</Button>
+              <div className="flex gap-2 justify-center my-3 mb-6">
+                <Button className="" onClick={handleDownloadReceipt}>
+                  <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Download Receipt
+                </Button>
+                <Link href="/profile?tab=orders">
+                  <Button variant={"outline"} className="">
+                    <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    View Orders
+                  </Button>
+                </Link>
+              </div>
             </motion.h2>
 
             <div className="flex items-center gap-4">

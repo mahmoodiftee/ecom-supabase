@@ -1,23 +1,36 @@
-// app/login/login-form.tsx
 "use client";
-
 import { signInAction } from "@/app/actions";
-import { FormMessage } from "@/components/form-message";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
+export function ClientSignInForm() {
+  const { setUser } = useUser();
+  const router = useRouter();
 
-export function LoginForm({ message }: { message?: string }) {
+  const handleSubmit = async (formData: FormData) => {
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    });
+
+    if (error) {
+      return;
+    }
+
+    if (data?.user) {
+      setUser(data.user);
+      router.push("/profile");
+      router.refresh();
+    }
+  };
+
   return (
-    <form
-      className="flex-1 flex flex-col min-w-64"
-      onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        await signInAction(formData);
-      }}
-    >
+    <form className="flex-1 flex flex-col min-w-64" action={handleSubmit}>
       <h1 className="text-2xl font-medium">Sign in</h1>
       <p className="text-sm text-foreground">
         Don't have an account?{" "}
@@ -43,8 +56,9 @@ export function LoginForm({ message }: { message?: string }) {
           placeholder="Your password"
           required
         />
-        <SubmitButton pendingText="Signing In...">Sign in</SubmitButton>
-        <FormMessage message={message ? { message } : undefined} />
+        <SubmitButton pendingText="Signing In..." formAction={signInAction}>
+          Sign in
+        </SubmitButton>
       </div>
     </form>
   );

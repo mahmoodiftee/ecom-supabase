@@ -38,15 +38,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  // Calculate totals
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
   const totalPrice = items.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
 
-  // Load cart from localStorage on mount
+
   useEffect(() => {
     const storedCart = localStorage.getItem("cart");
     if (storedCart) {
@@ -59,7 +57,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Save cart to localStorage when it changes
+
   useEffect(() => {
     if (items.length > 0) {
       localStorage.setItem("cart", JSON.stringify(items));

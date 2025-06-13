@@ -30,7 +30,9 @@ export default async function KeyboardsPage({
     }
   });
 
+
   let filteredProducts = [...keyboards];
+
 
   // Filters
   if (query) {
@@ -63,6 +65,8 @@ export default async function KeyboardsPage({
     );
   }
 
+  const reversedProducts = [...filteredProducts].reverse();
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Keyboards ({filteredProducts.length})</h1>
@@ -73,7 +77,7 @@ export default async function KeyboardsPage({
         </div>
 
         <div className="lg:col-span-3">
-          <ProductGrid products={filteredProducts} />
+          <ProductGrid products={reversedProducts} />
         </div>
       </div>
 

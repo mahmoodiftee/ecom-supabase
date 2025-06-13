@@ -5,10 +5,12 @@ import { getUserProfile } from "@/utils/profile";
 import { FormMessage, Message } from "@/components/form-message";
 import ProfileHeader from "./profile components/profile-header";
 import Max from "@/components/max";
+import { useUser } from "@/context/ProfileContext";
 
 export default async function Profile(props: {
   searchParams: Promise<Message>;
 }) {
+
   const searchParams = await props.searchParams;
 
   if ("message" in searchParams) {
@@ -24,18 +26,21 @@ export default async function Profile(props: {
     data: { user },
   } = await supabase.auth.getUser();
   console.log(user);
-  
+
   if (!user || !user?.id) {
     return redirect("/sign-in");
   }
 
   const profile = await getUserProfile(user?.id);
+  const { data: orders, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("user_id", profile.id)
+    .order("order_date", { ascending: false });
 
-  console.log(profile);
-  if (!user || !user?.id) {
-    return redirect("/sign-in");
+  if (error) {
+    console.error("Error fetching orders:", error.message);
   }
-
   // Mock data for demonstration
   const lovedItems = [
     {
@@ -58,29 +63,7 @@ export default async function Profile(props: {
     },
   ];
 
-  const purchaseHistory = [
-    {
-      id: "ORD-1234",
-      date: "2023-12-15",
-      total: 129.99,
-      status: "Delivered",
-      items: 2,
-    },
-    {
-      id: "ORD-5678",
-      date: "2023-11-28",
-      total: 89.99,
-      status: "Delivered",
-      items: 1,
-    },
-    {
-      id: "ORD-9012",
-      date: "2023-10-05",
-      total: 299.99,
-      status: "Delivered",
-      items: 3,
-    },
-  ];
+  const purchaseHistory = [...(orders || [])];
 
   const paymentMethods = [
     {

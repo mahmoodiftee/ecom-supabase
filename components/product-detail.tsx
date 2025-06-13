@@ -38,7 +38,6 @@ export default function ProductDetail({ product }: { product: Products }) {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 2;
-
   useEffect(() => {
     if (headerRef.current) {
       setHeaderHeight(headerRef.current.offsetHeight);

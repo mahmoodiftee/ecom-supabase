@@ -45,8 +45,6 @@ export function CartDrawer() {
 
   const handleCheckout = async () => {
     setIsCheckingOut(true);
-
-    // Redirect to the confirm-payment page with cart data
     router.push("/confirm-payment");
 
     setIsCheckingOut(false);

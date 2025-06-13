@@ -8,10 +8,8 @@ import { CartDrawer } from "@/components/cart";
 import { Toaster } from "@/components/ui/use-toast";
 import DesktopNav from "@/components/navbars/desktop-nav";
 import MobileNav from "@/components/navbars/mobile-nav";
-import { UserProvider } from "@/context/UserContext";
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import { headers } from "next/headers";
+import { UserProvider } from "@/context/ProfileContext";
+import { UserProvider as UserProvider2 } from "@/context/UserContext";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -53,20 +51,22 @@ export default async function RootLayout({
           <SmoothScroll>
             <CartProvider>
               <UserProvider>
-                <main className="w-full min-h-screen flex flex-col items-center">
-                  <div className="flex-1 w-full flex flex-col items-center">
-                    <DesktopNav navlinks={navlinks} />
-                    <MobileNav navlinks={navlinks} />
-                    {children}
-                    <CartDrawer />
-                    <Toaster />
-                  </div>
-                </main>
+                <UserProvider2>
+                  <main className="w-full min-h-screen flex flex-col items-center">
+                    <div className="flex-1 w-full flex flex-col items-center">
+                      <DesktopNav navlinks={navlinks} />
+                      <MobileNav navlinks={navlinks} />
+                      {children}
+                      <CartDrawer />
+                      <Toaster />
+                    </div>
+                  </main>
+                </UserProvider2>
               </UserProvider>
             </CartProvider>
           </SmoothScroll>
         </ThemeProvider>
       </body>
-    </html>
+    </html >
   );
 }

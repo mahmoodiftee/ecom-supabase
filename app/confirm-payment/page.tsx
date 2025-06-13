@@ -1,19 +1,40 @@
 "use client";
 
 import { useCart } from "@/context/cart-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { createBrowserClient } from "@supabase/ssr";
+import { getUserProfile } from "@/utils/profile";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function ConfirmPaymentPage() {
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
-  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user?.id) {
+        const profile = await getUserProfile(user.id);
+        setUser(profile);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -22,14 +43,14 @@ export default function ConfirmPaymentPage() {
         {/* Order Summary */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <h2 className="text-xl font-semibold mb-6 text-gray-800">Order Summary</h2>
-          
+
           <div className="space-y-4">
             {items.map((item) => (
               <div key={item.id} className="flex items-center justify-between gap-4 pb-4 border-b border-gray-100 last:border-0">
                 <div className="flex items-center gap-4 flex-1">
-                  <img 
-                    src={item.image} 
-                    alt={item.title} 
+                  <img
+                    src={item.image}
+                    alt={item.title}
                     className="w-20 h-20 object-cover rounded-lg"
                   />
                   <div className="flex-1">
@@ -56,8 +77,8 @@ export default function ConfirmPaymentPage() {
                   >
                     <Plus className="h-3 w-3" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
                     onClick={() => removeItem(item.id)}
@@ -88,11 +109,11 @@ export default function ConfirmPaymentPage() {
         {/* Payment Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <h2 className="text-xl font-semibold mb-6 text-gray-800">Payment Details</h2>
-          
+
           <Elements stripe={stripePromise}>
-            <CheckoutForm totalPrice={totalPrice} />
+            <CheckoutForm totalPrice={totalPrice} user={user} />
           </Elements>
-          
+
           <div className="mt-6 pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-500">
               Your payment is securely processed by Stripe. We don't store your credit card details.
@@ -104,15 +125,17 @@ export default function ConfirmPaymentPage() {
   );
 }
 
-const CheckoutForm = ({ totalPrice }: { totalPrice: number }) => {
-  const {
-    clearCart,
-  } = useCart();
+const CheckoutForm = ({ totalPrice, user }: { totalPrice: number; user: any }) => {
+  const { items, clearCart } = useCart();
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
-
+  // console.log({
+  //   items,
+  //   email: user?.email,
+  //   user_id: user?.id,
+  // });
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -126,7 +149,7 @@ const CheckoutForm = ({ totalPrice }: { totalPrice: number }) => {
       const response = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: totalPrice * 100 }),
+        body: JSON.stringify({ amount: Math.round(totalPrice) }),
       });
 
       const data = await response.json();
@@ -146,8 +169,41 @@ const CheckoutForm = ({ totalPrice }: { totalPrice: number }) => {
       if (error) {
         alert(`Payment failed: ${error.message}`);
       } else if (paymentIntent.status === "succeeded") {
-        clearCart();
-        router.push("/success");
+
+        const orderRes = await fetch("/api/complete-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items,
+            totalPrice: Math.round(totalPrice),
+            email: user?.email,
+            user_id: user?.id,
+          }),
+        });
+
+
+        if (!orderRes.ok) {
+          const errorText = await orderRes.text();
+          console.error("Order failed:", errorText);
+          throw new Error(errorText || "Order failed");
+        }
+        const orderData = await orderRes.json();
+
+        if (orderRes.ok && orderData.success) {
+          localStorage.setItem(
+            "order",
+            JSON.stringify({
+              items,
+              totalPrice: Math.round(totalPrice),
+            })
+          );
+          localStorage.removeItem("cart");
+          clearCart();
+          router.push("/success");
+        } else {
+          console.error("Order failed:", orderData.error);
+          alert("Order processing failed. Please contact support.");
+        }
       }
     } catch (error) {
       console.error("Payment error:", error);
@@ -157,12 +213,13 @@ const CheckoutForm = ({ totalPrice }: { totalPrice: number }) => {
     }
   };
 
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Card Details</label>
         <div className="border border-gray-200 rounded-lg p-3">
-          <CardElement 
+          <CardElement
             options={{
               style: {
                 base: {
@@ -180,10 +237,10 @@ const CheckoutForm = ({ totalPrice }: { totalPrice: number }) => {
           />
         </div>
       </div>
-      
-      <Button 
-        type="submit" 
-        disabled={isProcessing || !stripe} 
+
+      <Button
+        type="submit"
+        disabled={isProcessing || !stripe}
         className="w-full py-6 text-lg"
       >
         {isProcessing ? (
