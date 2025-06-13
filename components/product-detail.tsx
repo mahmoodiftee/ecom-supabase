@@ -29,7 +29,7 @@ import { getUserProfile } from "@/utils/profile";
 import { toast } from "@/components/ui/use-toast"
 export default function ProductDetail({ product }: { product: Products }) {
   const [quantity, setQuantity] = useState(1);
-  const [prevQuantity, setPrevQuantity] = useState(1); 
+  const [prevQuantity, setPrevQuantity] = useState(1);
   const { addItem } = useCart();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
@@ -440,13 +440,15 @@ export default function ProductDetail({ product }: { product: Products }) {
                   </Button>
                   <Button
                     onClick={() => toggleBookmark(product.id)}
-                    variant={isBookmarked ? "outline" : "default"}
+                    variant={isBookmarked ? "default" : "outline"}
                     size="lg"
                     disabled={!user}
+                    className={isBookmarked ? "bg-red-500 text-white hover:bg-red-600" : ""}
                   >
-                    <Heart className="mr-2 h-5 w-5" />
+                    <Heart fill={isBookmarked ? "white" : "black"} className="mr-2 h-5 w-5" />
                     {isBookmarked ? "Remove from Wishlist" : "Add to Wishlist"}
                   </Button>
+
 
 
                 </div>

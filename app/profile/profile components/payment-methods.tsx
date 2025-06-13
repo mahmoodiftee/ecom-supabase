@@ -1,11 +1,29 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { CreditCard, Plus, Trash2 } from "lucide-react"
+'use client';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CreditCard, Plus, Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface PaymentMethodsProps {
-  paymentMethods: any[]
+  paymentMethods: any[];
 }
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 export default function PaymentMethods({ paymentMethods }: PaymentMethodsProps) {
   return (
@@ -33,9 +51,19 @@ export default function PaymentMethods({ paymentMethods }: PaymentMethodsProps) 
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <motion.div
+              className="space-y-4"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
               {paymentMethods.map((method) => (
-                <div key={method.id} className="border rounded-lg p-4">
+                <motion.div
+                  key={method.id}
+                  variants={itemVariants}
+                  transition={{ duration: 0.3 }}
+                  className="border rounded-lg p-4"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {method.type === "Credit Card" ? (
@@ -63,7 +91,9 @@ export default function PaymentMethods({ paymentMethods }: PaymentMethodsProps) 
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium">
-                            {method.type === "Credit Card" ? `•••• •••• •••• ${method.last4}` : method.email}
+                            {method.type === "Credit Card"
+                              ? `•••• •••• •••• ${method.last4}`
+                              : method.email}
                           </h3>
                           {method.default && (
                             <Badge variant="outline" className="text-xs">
@@ -88,12 +118,12 @@ export default function PaymentMethods({ paymentMethods }: PaymentMethodsProps) 
                       </Button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
