@@ -1,9 +1,11 @@
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Package, Eye, Copy } from "lucide-react"
-import Image from "next/image"
+'use client';
+
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Package, Eye, Copy } from "lucide-react";
+import Image from "next/image";
 import {
   Dialog,
   DialogTrigger,
@@ -11,47 +13,62 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"
-import { toast } from "@/components/ui/use-toast"
-import Link from "next/link"
+} from "@/components/ui/dialog";
+import { toast } from "@/components/ui/use-toast";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface PurchaseHistoryProps {
-  orders: any[]
+  orders: any[];
 }
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export default function PurchaseHistory({ orders }: PurchaseHistoryProps) {
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
-  const [showFullId, setShowFullId] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [showFullId, setShowFullId] = useState(false);
 
   const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text)
-      toast({ title: "Copied to clipboard", description: "Order ID copied to clipboard" })
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copied to clipboard", description: "Order ID copied to clipboard" });
     } catch (err) {
-      toast({ title: "Failed to copy!", description: "Order ID Failed to copy!" })
+      toast({ title: "Failed to copy!", description: "Order ID Failed to copy!" });
     }
-  }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Processing":
-        return "bg-yellow-100 text-yellow-600"
+        return "bg-yellow-100 text-yellow-600";
       case "Delivered":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "Cancelled":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
-    <>    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full max-w-4xl mx-auto p-4">
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-xl sm:text-2xl">Order History</CardTitle>
-          <CardDescription className="text-sm sm:text-base">
-            View and track your orders
-          </CardDescription>
+          <CardDescription className="text-sm sm:text-base">View and track your orders</CardDescription>
         </CardHeader>
 
         <CardContent className="px-4 sm:px-6">
@@ -65,9 +82,19 @@ export default function PurchaseHistory({ orders }: PurchaseHistoryProps) {
               <Button className="w-full sm:w-auto">Start Shopping</Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <motion.div
+              className="space-y-4"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
               {orders.map((order) => (
-                <div key={order.id} className="border rounded-lg p-3 sm:p-4 bg-card">
+                <motion.div
+                  key={order.id}
+                  variants={itemVariants}
+                  transition={{ duration: 0.3 }}
+                  className="border rounded-lg p-3 sm:p-4 bg-card"
+                >
                   <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
@@ -140,7 +167,7 @@ export default function PurchaseHistory({ orders }: PurchaseHistoryProps) {
                               {showFullId
                                 ? selectedOrder?.id
                                 : selectedOrder?.id?.slice(0, 20) +
-                                (selectedOrder?.id?.length > 20 ? "..." : "")}
+                                  (selectedOrder?.id?.length > 20 ? "..." : "")}
                             </span>
                             {selectedOrder?.id?.length > 10 && (
                               <button
@@ -193,12 +220,11 @@ export default function PurchaseHistory({ orders }: PurchaseHistoryProps) {
                                     />
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <h5 className=" font-medium text-xs md:text-base">{item.title}</h5>
-                                    <h5 className=" font-medium text-xs md:text-base">{item.id}</h5>
+                                    <h5 className="font-medium text-xs md:text-base">{item.title}</h5>
+                                    <h5 className="font-medium text-xs md:text-base">{item.id}</h5>
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 mt-1">
                                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                         <span>Qty: {item.quantity}</span>
-                                        {/* <span className="font-medium text-foreground">${item.price.toFixed(2)}</span> */}
                                       </div>
                                       <div className="text-sm font-medium">
                                         ${(item.price * item.quantity).toFixed(2)}
@@ -210,27 +236,22 @@ export default function PurchaseHistory({ orders }: PurchaseHistoryProps) {
                             ))}
                           </div>
 
-
                           <div className="border-t pt-4">
                             <div className="flex justify-between items-center">
                               <span className="text-base sm:text-lg font-medium">Total:</span>
-                              <span className="text-lg sm:text-xl font-bold">
-                                ${selectedOrder?.total_amount}
-                              </span>
+                              <span className="text-lg sm:text-xl font-bold">${selectedOrder?.total_amount}</span>
                             </div>
                           </div>
                         </div>
                       </DialogContent>
                     </Dialog>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </CardContent>
       </Card>
-
-    </div >
-    </>
-  )
+    </div>
+  );
 }

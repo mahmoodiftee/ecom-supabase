@@ -152,110 +152,112 @@ export default function ProfileInfo({
   };
 
   return (
-    <Card className="max-w-3xl mx-auto">
-      <CardHeader>
-        <CardTitle>Personal Information</CardTitle>
-        <CardDescription>Update your profile details</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-3" onSubmit={handleSubmit}>
-          <div className="flex flex-col items-center gap-4 mb-3">
-            <div className="relative group" onClick={handleImageClick}>
-              {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="Profile preview"
-                  className="w-32 h-32 rounded-full object-cover border-2 border-gray-200"
+    <div className="w-full max-w-4xl mx-auto p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Personal Information</CardTitle>
+          <CardDescription>Update your profile details</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-3" onSubmit={handleSubmit}>
+            <div className="flex flex-col items-center gap-4 mb-3">
+              <div className="relative group" onClick={handleImageClick}>
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt="Profile preview"
+                    className="w-32 h-32 rounded-full object-cover border-2 border-gray-200"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-2xl font-bold">
+                    {profile?.full_name?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <Input
+                type="file"
+                id="avatar"
+                name="avatar"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+                ref={fileInputRef}
+              />
+              <Label
+                htmlFor="avatar"
+                className="text-sm text-gray-500 cursor-pointer"
+              >
+                Change profile picture
+              </Label>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  defaultValue={user.email || ""}
+                  disabled
                 />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-2xl font-bold">
-                  {profile?.full_name?.charAt(0).toUpperCase() || "U"}
+                <p className="text-xs">Your email cannot be changed</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="full_name">Full Name</Label>
+                <Input
+                  id="full_name"
+                  name="full_name"
+                  defaultValue={profile?.full_name || ""}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  defaultValue={profile?.phone || ""}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  name="address"
+                  defaultValue={profile?.address || ""}
+                />
+              </div>
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full"
+            >
+              {loading ? "Updating..." : "Update Profile"}
+            </Button>
+            <SignOut />
+            <div className="flex flex-col gap-2 w-full max-w-md text-sm">
+              {message.type === "success" && (
+                <div className="text-foreground border-l-2 border-foreground px-4">
+                  {message.content}
                 </div>
               )}
-              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                <Camera className="h-6 w-6 text-white" />
-              </div>
+              {message.type === "error" && (
+                <div className="text-destructive-foreground border-l-2 border-destructive-foreground px-4">
+                  {message.content}
+                </div>
+              )}
             </div>
-            <Input
-              type="file"
-              id="avatar"
-              name="avatar"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageChange}
-              ref={fileInputRef}
-            />
-            <Label
-              htmlFor="avatar"
-              className="text-sm text-gray-500 cursor-pointer"
-            >
-              Change profile picture
-            </Label>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                defaultValue={user.email || ""}
-                disabled
-              />
-              <p className="text-xs">Your email cannot be changed</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name</Label>
-              <Input
-                id="full_name"
-                name="full_name"
-                defaultValue={profile?.full_name || ""}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                name="phone"
-                defaultValue={profile?.phone || ""}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                name="address"
-                defaultValue={profile?.address || ""}
-              />
-            </div>
-          </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? "Updating..." : "Update Profile"}
-          </Button>
-          <SignOut />
-          <div className="flex flex-col gap-2 w-full max-w-md text-sm">
-            {message.type === "success" && (
-              <div className="text-foreground border-l-2 border-foreground px-4">
-                {message.content}
-              </div>
-            )}
-            {message.type === "error" && (
-              <div className="text-destructive-foreground border-l-2 border-destructive-foreground px-4">
-                {message.content}
-              </div>
-            )}
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -3,11 +3,12 @@
 import { useState } from "react"
 import type { User } from "@supabase/supabase-js"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ProfileInfo from "./profile-info"
 import PurchaseHistory from "./purchase-history"
 import PaymentMethods from "./payment-methods"
 import LovedItems from "./loved-items"
+import { AnimatePresence, motion } from "framer-motion"
 
 interface ProfileTabsProps {
   profile: any
@@ -29,12 +30,25 @@ export default function ProfileTabs({ profile, user, lovedItems, purchaseHistory
         ? "orders"
         : tabParam === "payments"
           ? "payments"
-          : "profile",
+          : "profile"
   )
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
     router.push(`/profile?tab=${value}`)
+  }
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "wishlist":
+        return <LovedItems items={lovedItems} userId={user.id} />
+      case "orders":
+        return <PurchaseHistory orders={purchaseHistory} />
+      case "payments":
+        return <PaymentMethods paymentMethods={paymentMethods} />
+      default:
+        return <ProfileInfo searchParams={searchParams} profile={profile} user={user} />
+    }
   }
 
   return (
@@ -46,21 +60,17 @@ export default function ProfileTabs({ profile, user, lovedItems, purchaseHistory
         <TabsTrigger value="payments">Payments</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="profile">
-        <ProfileInfo searchParams={searchParams} profile={profile} user={user} />
-      </TabsContent>
-
-      <TabsContent value="wishlist">
-        <LovedItems items={lovedItems} userId={user.id} />
-      </TabsContent>
-
-      <TabsContent value="orders">
-        <PurchaseHistory orders={purchaseHistory} />
-      </TabsContent>
-
-      <TabsContent value="payments">
-        <PaymentMethods paymentMethods={paymentMethods} />
-      </TabsContent>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+        >
+          {renderTabContent()}
+        </motion.div>
+      </AnimatePresence>
     </Tabs>
   )
 }
