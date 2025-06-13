@@ -21,22 +21,121 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/context/cart-context";
-import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/use-toast";
 import { Products } from "@/types/products";
 import { cn } from "@/lib/utils";
 import Max from "./max";
-
+import { createBrowserClient } from "@supabase/ssr";
+import { getUserProfile } from "@/utils/profile";
+import { toast } from "@/components/ui/use-toast"
 export default function ProductDetail({ product }: { product: Products }) {
   const [quantity, setQuantity] = useState(1);
-  const [prevQuantity, setPrevQuantity] = useState(1); // Track previous quantity
+  const [prevQuantity, setPrevQuantity] = useState(1); 
   const { addItem } = useCart();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
-  const router = useRouter();
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [user, setUser] = useState<any>(null);
+  const [bookmarkedIds, setBookmarkedIds] = useState<any[]>([]);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user?.id) {
+        const profile = await getUserProfile(user.id);
+        setUser(profile);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchBookmarks = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { data: bookmarks, error } = await supabase
+        .from("bookmarks")
+        .select("product_id")
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Error fetching bookmarks:", error);
+        return;
+      }
+
+      const ids = (bookmarks ?? []).map((bookmark) => bookmark.product_id);
+      setBookmarkedIds(ids);
+    };
+
+    fetchBookmarks();
+  }, [user]);
+
+  useEffect(() => {
+    setIsBookmarked(bookmarkedIds.includes(product.id));
+  }, [bookmarkedIds, product.id]);
+
+  const toggleBookmark = async (productId: any) => {
+    if (!user?.id) return;
+
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const checkIfBookmarked = bookmarkedIds.includes(productId);
+
+    if (checkIfBookmarked) {
+      setBookmarkedIds((prev) => prev.filter((id) => id !== productId));
+    } else {
+      setBookmarkedIds((prev) => [...prev, productId]);
+    }
+
+    try {
+      if (checkIfBookmarked) {
+        const { error } = await supabase
+          .from("bookmarks")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("product_id", productId);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("bookmarks").insert({
+          user_id: user.id,
+          product_id: productId,
+        });
+
+        if (error) throw error;
+      }
+    } catch (error) {
+      if (checkIfBookmarked) {
+        setBookmarkedIds((prev) => [...prev, productId]);
+      } else {
+        setBookmarkedIds((prev) => prev.filter((id) => id !== productId));
+      }
+      toast({ title: "Failed to add on wishlist.!", description: "Something went wrong while updating your wishlist." })
+    }
+  };
+
+
+
+
   const reviewsPerPage = 2;
   useEffect(() => {
     if (headerRef.current) {
@@ -47,7 +146,6 @@ export default function ProductDetail({ product }: { product: Products }) {
   const selectedImage = images[selectedImageIndex];
 
   const reviews = product?.reviews || [];
-  // console.log(reviews);
   const totalPages = Math.ceil(reviews.length / reviewsPerPage);
   const indexOfLastReview = currentPage * reviewsPerPage;
   const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
@@ -55,24 +153,20 @@ export default function ProductDetail({ product }: { product: Products }) {
 
   const decreaseQuantity = () => {
     if (quantity > 1) {
-      setPrevQuantity(quantity); // Update previous quantity
+      setPrevQuantity(quantity);
       setQuantity(quantity - 1);
     }
   };
 
   const increaseQuantity = () => {
     if (quantity < (product.quantity || 10)) {
-      setPrevQuantity(quantity); // Update previous quantity
+      setPrevQuantity(quantity);
       setQuantity(quantity + 1);
     }
   };
 
   const handleAddToCart = () => {
     addItem(product, quantity);
-    toast({
-      title: "Added to cart",
-      description: `${quantity} × ${product.title} added to your cart`,
-    });
   };
 
   const nextImage = () => {
@@ -91,6 +185,8 @@ export default function ProductDetail({ product }: { product: Products }) {
       transition: { duration: 0.5, delay: 0.0 * i },
     }),
   };
+
+
   return (
     <Max>
       <div className="min-h-screen md:pb-16 pb-6 relative">
@@ -342,10 +438,17 @@ export default function ProductDetail({ product }: { product: Products }) {
                     <ShoppingCart className="mr-2 h-5 w-5" />
                     Add to Cart
                   </Button>
-                  <Button variant="outline" size="lg">
+                  <Button
+                    onClick={() => toggleBookmark(product.id)}
+                    variant={isBookmarked ? "outline" : "default"}
+                    size="lg"
+                    disabled={!user}
+                  >
                     <Heart className="mr-2 h-5 w-5" />
-                    Add to Wishlist
+                    {isBookmarked ? "Remove from Wishlist" : "Add to Wishlist"}
                   </Button>
+
+
                 </div>
               </div>
 

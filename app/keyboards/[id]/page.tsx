@@ -7,9 +7,11 @@ export default async function KeyboardsPage({
 }: {
   params: { id: string };
 }) {
+
+ 
   const { data: keyboards, error } = await supabasePublic
     .from("keyboards")
-    .select("*"); // Retrieve all columns
+    .select("*"); 
 
   if (error) {
     console.error("Error fetching data from Supabase:", error);

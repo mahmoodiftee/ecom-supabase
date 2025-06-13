@@ -32,36 +32,44 @@ export default async function Profile(props: {
   }
 
   const profile = await getUserProfile(user?.id);
-  const { data: orders, error } = await supabase
+  //orders
+  const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("*")
     .eq("user_id", profile.id)
     .order("order_date", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching orders:", error.message);
+  if (orderError) {
+    console.error("Error fetching orders:", orderError.message);
   }
-  // Mock data for demonstration
-  const lovedItems = [
-    {
-      id: 1,
-      name: "Wireless Headphones",
-      price: 129.99,
-      image: "/placeholder.svg?height=80&width=80",
-    },
-    {
-      id: 2,
-      name: "Smart Watch",
-      price: 249.99,
-      image: "/placeholder.svg?height=80&width=80",
-    },
-    {
-      id: 3,
-      name: "Laptop Sleeve",
-      price: 39.99,
-      image: "/placeholder.svg?height=80&width=80",
-    },
-  ];
+
+  //wishlists
+  const { data: bookmarks, error: bookmarkError } = await supabase
+    .from("bookmarks")
+    .select("*")
+    .eq("user_id", profile.id);
+
+  if (bookmarkError) {
+    console.error("Error fetching bookmarks:", bookmarkError.message);
+  }
+
+
+  const productIds = (bookmarks || []).map((b) => b.product_id);
+
+  let lovedItems = [];
+
+  if (productIds.length > 0) {
+    const { data: products, error: productError } = await supabase
+      .from("keyboards")
+      .select("*")
+      .in("id", productIds);
+
+    if (productError) {
+      console.error("Error fetching loved products:", productError.message);
+    } else {
+      lovedItems = products;
+    }
+  }
 
   const purchaseHistory = [...(orders || [])];
 

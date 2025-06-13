@@ -51,7 +51,7 @@ export default function ProfileTabs({ profile, user, lovedItems, purchaseHistory
       </TabsContent>
 
       <TabsContent value="wishlist">
-        <LovedItems items={lovedItems} />
+        <LovedItems items={lovedItems} userId={user.id} />
       </TabsContent>
 
       <TabsContent value="orders">
