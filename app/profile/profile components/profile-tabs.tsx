@@ -15,7 +15,7 @@ interface ProfileTabsProps {
   user: User
   lovedItems: any[]
   purchaseHistory: any[]
-  paymentMethods: any[]
+  paymentMethods: any
 }
 
 export default function ProfileTabs({ profile, user, lovedItems, purchaseHistory, paymentMethods }: ProfileTabsProps) {
@@ -45,7 +45,7 @@ export default function ProfileTabs({ profile, user, lovedItems, purchaseHistory
       case "orders":
         return <PurchaseHistory orders={purchaseHistory} />
       case "payments":
-        return <PaymentMethods paymentMethods={paymentMethods} />
+        return <PaymentMethods paymentMethods={paymentMethods} user={user} />
       default:
         return <ProfileInfo searchParams={searchParams} profile={profile} user={user} />
     }

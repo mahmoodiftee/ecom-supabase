@@ -16,6 +16,8 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function ConfirmPaymentPage() {
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
   const [user, setUser] = useState<any>(null);
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -29,12 +31,17 @@ export default function ConfirmPaymentPage() {
       if (user?.id) {
         const profile = await getUserProfile(user.id);
         setUser(profile);
+
+        const { data: methods } = await supabase
+          .from('payment_methods')
+          .select('*')
+          .eq('user_id', user.id);
+
+        setPaymentMethods(methods || []);
       }
     };
-
     fetchUser();
   }, []);
-
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -111,7 +118,7 @@ export default function ConfirmPaymentPage() {
           <h2 className="text-xl font-semibold mb-6 text-gray-800">Payment Details</h2>
 
           <Elements stripe={stripePromise}>
-            <CheckoutForm totalPrice={totalPrice} user={user} />
+            <CheckoutForm totalPrice={totalPrice} user={user} paymentMethods={paymentMethods} />
           </Elements>
 
           <div className="mt-6 pt-4 border-t border-gray-200">
@@ -125,12 +132,14 @@ export default function ConfirmPaymentPage() {
   );
 }
 
-const CheckoutForm = ({ totalPrice, user }: { totalPrice: number; user: any }) => {
+const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number; user: any, paymentMethods: any[] }) => {
+
   const { items, clearCart } = useCart();
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
+
   // console.log({
   //   items,
   //   email: user?.email,
@@ -219,6 +228,30 @@ const CheckoutForm = ({ totalPrice, user }: { totalPrice: number; user: any }) =
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Card Details</label>
         <div className="border border-gray-200 rounded-lg p-3">
+          {paymentMethods.length > 0 && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Saved Payment Methods</label>
+              <div className="space-y-2">
+                {paymentMethods.map((method, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    // onClick={() => {
+                    //   alert(`Selected card ending in ${method.last4}`);
+                    // }}
+                    className="w-full border rounded-lg p-3 flex justify-between items-center hover:bg-gray-50 transition"
+                  >
+                    <span>{method.card_number}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">{method.expiry}</span>
+                      <span className="text-gray-500">{method.cvc}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <CardElement
             options={{
               style: {
