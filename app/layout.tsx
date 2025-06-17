@@ -11,6 +11,8 @@ import MobileNav from "@/components/navbars/mobile-nav";
 import { UserProvider } from "@/context/ProfileContext";
 import { UserProvider as UserProvider2 } from "@/context/UserContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { createClient } from "@/utils/supabase/server";
+import { User } from "@supabase/supabase-js";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -38,8 +40,25 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  let role = null;
 
+  if (user) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!error && data) {
+      role = data.role
+    }
+  }
+  // console.log(role);
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground" cz-shortcut-listen="false">
@@ -55,11 +74,16 @@ export default async function RootLayout({
                 <UserProvider2>
                   <main className="w-full min-h-screen flex flex-col items-center">
                     <div className="flex-1 w-full flex flex-col items-center">
-                      <DesktopNav navlinks={navlinks} />
-                      <MobileNav navlinks={navlinks} />
-                      <SidebarProvider>
-                        {children}
-                      </SidebarProvider>
+                      {role !== "admin" && <DesktopNav navlinks={navlinks} />}
+                      {role !== "admin" && <MobileNav navlinks={navlinks} />}
+                      {role === "admin" ? (
+                        <SidebarProvider>
+                          {children}
+                        </SidebarProvider>
+                      ) : (
+                        children
+                      )
+                      }
                       <CartDrawer />
                       <Toaster />
                     </div>

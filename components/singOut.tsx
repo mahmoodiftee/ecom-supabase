@@ -7,6 +7,7 @@ import { useUser } from "@/context/UserContext";
 export function SignOut() {
   const { setUser } = useUser();
   const handleLogout = () => {
+    localStorage.removeItem("cart");
     signOutAction();
     setUser(null);
   };

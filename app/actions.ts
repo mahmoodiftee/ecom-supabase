@@ -23,12 +23,22 @@ export const signInAction = async (formData: FormData) => {
   }
 
   const user = data?.user;
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', data.user.id)
+    .single()
+
 
   const userCookie = await cookies();
   userCookie.set("user", JSON.stringify(user));
 
+  if (profileData?.role === "admin") {
+    return redirect("/dashboard");
+  } else if (profileData?.role === "user") {
+    return redirect("/profile");
+  }
 
-  return redirect("/profile");
 };
 
 export const signOutAction = async () => {

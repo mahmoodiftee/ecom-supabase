@@ -21,10 +21,18 @@ export function ClientSignInForm() {
     if (error) {
       return;
     }
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single()
 
-    if (data?.user) {
+    // console.log(profileData?.role);
+    if (profileData) {
       setUser(data.user);
-      router.push("/profile");
+      profileData?.role === "admin"
+        ? router.push("/admin")
+        : router.push("/home");
       router.refresh();
     }
   };
