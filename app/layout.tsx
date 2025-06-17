@@ -5,11 +5,12 @@ import "./globals.css";
 import { CartProvider } from "@/context/cart-context";
 import SmoothScroll from "@/components/SmoothScrollWrapper/SmoothScroll";
 import { CartDrawer } from "@/components/cart";
-import { Toaster } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 import DesktopNav from "@/components/navbars/desktop-nav";
 import MobileNav from "@/components/navbars/mobile-nav";
 import { UserProvider } from "@/context/ProfileContext";
 import { UserProvider as UserProvider2 } from "@/context/UserContext";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -56,7 +57,9 @@ export default async function RootLayout({
                     <div className="flex-1 w-full flex flex-col items-center">
                       <DesktopNav navlinks={navlinks} />
                       <MobileNav navlinks={navlinks} />
-                      {children}
+                      <SidebarProvider>
+                        {children}
+                      </SidebarProvider>
                       <CartDrawer />
                       <Toaster />
                     </div>
