@@ -98,9 +98,17 @@ export function Checkmark({
 export default function SuccessPage() {
   const [items, setItems] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const router = useRouter();
+  const { clearCart } = useCart();
 
   useEffect(() => {
     const orderData = localStorage.getItem("order");
+    localStorage.removeItem("cart");
+    clearCart();
+    if (!orderData) {
+      router.push("/");
+      return;
+    }
     if (orderData) {
       const { items, totalPrice } = JSON.parse(orderData);
       setItems(items);
@@ -131,7 +139,7 @@ export default function SuccessPage() {
 
   return (
     <Max>
-      <Card className="w-full max-w-sm md:max-w-3xl mx-auto p-6 min-h-[300px] flex flex-col justify-center dark:bg-zinc-900 bg-white dark:border-zinc-800 border-zinc-200 backdrop-blur-sm">
+      <Card className="w-full max-w-md md:max-w-3xl mx-auto pt-4 md:p-6 min-h-[300px] flex flex-col justify-center dark:bg-zinc-900 bg-white dark:border-zinc-800 border-zinc-200 backdrop-blur-sm">
         <CardContent className="space-y-4 flex flex-col items-center justify-center">
           <motion.div
             className="flex justify-center"
@@ -245,8 +253,8 @@ export default function SuccessPage() {
                               className="object-cover"
                             />
                           </div>
-                          <div className="flex-1 flex flex-col justify-center items-start">
-                            <h3 className="font-medium">
+                          <div className="flex-1 flex flex-col justify-start items-start">
+                            <h3 className="font-medium text-start leading-tight text-sm md:text-lg">
                               {item.title.length > 5
                                 ? `${item.title.slice(0, 35)}...`
                                 : item.title}

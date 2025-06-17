@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, Plus, Trash2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
+import { toast } from "@/components/ui/use-toast";
 
 interface PaymentMethod {
   id: string;
@@ -44,19 +45,23 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const AddPaymentForm = ({ onSuccess, onClose, user }: { onSuccess: () => void, onClose: () => void, user: User }) => {
+const AddPaymentForm = ({ onSuccess, onClose, user }: {
+  onSuccess: () => Promise<void>,
+  onClose: () => void,
+  user: User
+}) => {
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvc, setCvc] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  console.log(user);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
 
-    if (!cardNumber || !expiry || !cvc ) {
+    if (!cardNumber || !expiry || !cvc) {
       setError('Please fill all fields');
       setLoading(false);
       return;
@@ -81,14 +86,12 @@ const AddPaymentForm = ({ onSuccess, onClose, user }: { onSuccess: () => void, o
         });
 
       if (supabaseError) {
-        setError(supabaseError.message);
-        return;
+        throw supabaseError;
       }
 
-      onSuccess();
-      onClose();
-    } catch (err) {
-      setError('An unexpected error occurred');
+      await onSuccess();
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred');
       console.error(err);
     } finally {
       setLoading(false);
@@ -107,9 +110,8 @@ const AddPaymentForm = ({ onSuccess, onClose, user }: { onSuccess: () => void, o
 
     if (parts.length) {
       return parts.join(' ');
-    } else {
-      return value;
     }
+    return value;
   };
 
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +142,6 @@ const AddPaymentForm = ({ onSuccess, onClose, user }: { onSuccess: () => void, o
           disabled
           placeholder="John Doe"
         />
-
       </div>
 
       <div className="space-y-2">
@@ -184,6 +185,7 @@ const AddPaymentForm = ({ onSuccess, onClose, user }: { onSuccess: () => void, o
           Cancel
         </Button>
         <Button type="submit" disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
           {loading ? 'Processing...' : 'Add Payment Method'}
         </Button>
       </div>
@@ -191,12 +193,90 @@ const AddPaymentForm = ({ onSuccess, onClose, user }: { onSuccess: () => void, o
   );
 };
 
-export default function PaymentMethods({ paymentMethods: initialPaymentMethods, user }: PaymentMethodsProps) {
+const PaymentMethodItem = ({
+  method,
+  onDelete
+}: {
+  method: PaymentMethod,
+  onDelete: (id: string) => Promise<void>
+}) => {
+  const [isDeleting, setIsDeleting] = useState(false);
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete(method.id);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <motion.div
+      variants={itemVariants}
+      transition={{ duration: 0.3 }}
+      className="border rounded-lg p-4"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {method.type === "Credit Card" ? (
+            <div className="bg-primary-foreground border p-2 rounded-md">
+              <CreditCard className="h-6 w-6" />
+            </div>
+          ) : (
+            <div className="bg-blue-100 p-2 rounded-md">
+              <svg
+                className="h-6 w-6 text-blue-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M6.5 10.5H17.5M12 3V21M8.5 7.5H15.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          )}
+          <div>
+            <h3 className="font-medium">
+              {method.type === "Credit Card"
+                ? `${method.card_number}`
+                : method.email}
+            </h3>
+            <div className="flex items-center justify-between gap-2">
+              {method.type === "Credit Card" && (
+                <p className="text-sm text-muted-foreground">Expires {method.expiry}</p>
+              )}
+              <Button
+                onClick={handleDelete}
+                size="sm"
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                <span className="sr-only">Remove</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default function PaymentMethods({ paymentMethods: initialPaymentMethods, user }: PaymentMethodsProps) {
   const [open, setOpen] = useState(false);
-  const [refresh, setRefresh] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState(initialPaymentMethods);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -204,10 +284,10 @@ export default function PaymentMethods({ paymentMethods: initialPaymentMethods, 
   }, [initialPaymentMethods]);
 
   const handleDelete = async (id: string) => {
-    setIsDeleting(id);
     const previousMethods = [...paymentMethods];
 
-    setPaymentMethods(paymentMethods.filter(method => method.id !== id));
+    // Optimistic update
+    setPaymentMethods(prev => prev.filter(method => method.id !== id));
 
     try {
       const { error } = await supabase
@@ -215,28 +295,61 @@ export default function PaymentMethods({ paymentMethods: initialPaymentMethods, 
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        // Revert if error
+        setPaymentMethods(previousMethods);
+        throw error;
+      }
 
-    } catch (error) {
-      setPaymentMethods(previousMethods);
-      console.error('Error deleting payment method:', error);
-      // toast.error('Failed to delete payment method');
-    } finally {
-      setIsDeleting(null);
+      toast({
+        title: "Success",
+        description: "Payment method removed successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete payment method",
+      });
     }
   };
 
-  const handleSuccess = () => {
-    setRefresh(!refresh);
+  const handleSuccess = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('payment_methods')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setPaymentMethods(data || []);
+      toast({
+        title: "Success",
+        description: "Payment method added successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to refresh payment methods",
+      });
+    } finally {
+      setIsLoading(false);
+      setOpen(false);
+    }
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-start md:items-center justify-between">
           <div>
-            <CardTitle>Payment Methods</CardTitle>
-            <CardDescription>Manage your saved payment options</CardDescription>
+            <CardTitle className="text-lg font-bold md:text-2xl md:font-semibold leading-none tracking-tight">
+              Manage Payment Methods
+            </CardTitle>
+            <CardDescription className="leading-none tracking-tight mt-1">
+              Manage your saved payment options
+            </CardDescription>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -249,16 +362,26 @@ export default function PaymentMethods({ paymentMethods: initialPaymentMethods, 
               <DialogHeader>
                 <DialogTitle>Add Payment Method</DialogTitle>
               </DialogHeader>
-              <AddPaymentForm user={user} onSuccess={handleSuccess} onClose={() => setOpen(false)} />
+              <AddPaymentForm
+                user={user}
+                onSuccess={handleSuccess}
+                onClose={() => setOpen(false)}
+              />
             </DialogContent>
           </Dialog>
         </CardHeader>
         <CardContent>
-          {paymentMethods.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : paymentMethods.length === 0 ? (
             <div className="text-center py-12">
-              <CreditCard className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+              <CreditCard className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium">No payment methods</h3>
-              <p className="text-gray-500 mt-2">Add a payment method to speed up checkout</p>
+              <p className="text-muted-foreground mt-2">
+                Add a payment method to speed up checkout
+              </p>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button className="mt-4">
@@ -276,77 +399,11 @@ export default function PaymentMethods({ paymentMethods: initialPaymentMethods, 
               animate="visible"
             >
               {paymentMethods.map((method) => (
-                <motion.div
+                <PaymentMethodItem
                   key={method.id}
-                  variants={itemVariants}
-                  transition={{ duration: 0.3 }}
-                  className="border rounded-lg p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {method.type === "Credit Card" ? (
-                        <div className="bg-primary-foreground border p-2 rounded-md">
-                          <CreditCard className="h-6 w-6" />
-                        </div>
-                      ) : (
-                        <div className="bg-blue-100 p-2 rounded-md">
-                          <svg
-                            className="h-6 w-6 text-blue-600"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M6.5 10.5H17.5M12 3V21M8.5 7.5H15.5"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">
-                            {method.type === "Credit Card"
-                              ? `${method.card_number}`
-                              : method.email}
-                          </h3>
-                          {method.default && (
-                            <Badge variant="outline" className="text-xs">
-                              Default
-                            </Badge>
-                          )}
-                        </div>
-                        {method.type === "Credit Card" && (
-                          <p className="text-sm text-gray-500">Expires {method.expiry}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {!method.default && (
-                        <Button variant="outline" size="sm">
-                          Set as Default
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500"
-                        onClick={() => handleDelete(method.id)}
-                        disabled={isDeleting === method.id}
-                      >
-                        {isDeleting === method.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">Remove</span>
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
+                  method={method}
+                  onDelete={handleDelete}
+                />
               ))}
             </motion.div>
           )}

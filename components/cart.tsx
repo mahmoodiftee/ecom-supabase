@@ -45,9 +45,14 @@ export function CartDrawer() {
 
   const handleCheckout = async () => {
     setIsCheckingOut(true);
-    router.push("/confirm-payment");
-
+    setIsOpen(false)
+    router.push("/confirm-payment?fromCheckout=true");
     setIsCheckingOut(false);
+  };
+
+  const handleContinueShopping = () => {
+    setIsOpen(false)
+    router.push("/keyboards");
   };
 
   return (
@@ -85,7 +90,7 @@ export function CartDrawer() {
                 <Button
                   variant="outline"
                   className="mt-4"
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleContinueShopping}
                 >
                   Continue Shopping
                 </Button>

@@ -41,10 +41,10 @@ export default function ProductCard({ product }: { product: Products }) {
       },
       1
     );
-    toast({
-      title: "Added to cart",
-      description: `${product.title} added to your cart`,
-    });
+    // toast({
+    //   title: "Added to cart",
+    //   description: `${product.title} added to your cart`,
+    // });
   };
 
   return (
