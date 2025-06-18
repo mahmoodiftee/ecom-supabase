@@ -39,6 +39,14 @@ import { MoreHorizontal, Search, Filter, Eye, CheckIcon, CopyIcon } from "lucide
 import { createClient } from "@/utils/supabase/client";
 import { format } from "date-fns";
 
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
+
 interface Order {
   id: string;
   customer: string;
@@ -46,7 +54,7 @@ interface Order {
   status: string;
   total: string | number;
   date: string;
-  items: number;
+  items: OrderItem[];
 }
 
 interface OrdersTableProps {
@@ -54,7 +62,9 @@ interface OrdersTableProps {
   copiedId: string | null;
   onCopy: (id: string) => void;
   onStatusUpdate: (id: string, status: string) => void;
+  onViewDetails: (order: Order) => void;
 }
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case "Processing":
@@ -70,19 +80,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const OrderCard = ({
-  order,
-  index,
-  copiedId,
-  onStatusUpdate,
-  onCopy,
-}: {
-  order: Order;
-  index: number;
-  copiedId: string | null;
-  onCopy: (id: string) => void;
-  onStatusUpdate: (id: string, status: string) => void;
-}) => (
+const OrderCard = ({ order, index, copiedId, onStatusUpdate, onCopy, onViewDetails }: { order: Order; index: number; copiedId: string | null; onCopy: (id: string) => void; onStatusUpdate: (id: string, status: string) => void; onViewDetails: (order: Order) => void; }) => (
   <motion.div
     key={order.id}
     initial={{ opacity: 0, x: -20 }}
@@ -116,7 +114,9 @@ const OrderCard = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem>View details</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onViewDetails(order)}>
+            View details
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Update Status</DropdownMenuLabel>
           <DropdownMenuItem
@@ -144,19 +144,14 @@ const OrderCard = ({
       <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
       <div className="text-right">
         <div className="font-medium">{order.total}</div>
-        <div className="text-sm text-muted-foreground">{order.items} items</div>
+        <div className="text-sm text-muted-foreground">{order.items.length} items</div>
       </div>
     </div>
     <div className="text-sm text-muted-foreground">{order.date}</div>
   </motion.div>
 );
 
-const OrdersTable = ({
-  orders,
-  copiedId,
-  onStatusUpdate,
-  onCopy,
-}: OrdersTableProps) => (
+const OrdersTable = ({ orders, copiedId, onStatusUpdate, onCopy, onViewDetails, }: OrdersTableProps) => (
   <Table>
     <TableHeader>
       <TableRow>
@@ -205,7 +200,7 @@ const OrdersTable = ({
           </TableCell>
           <TableCell className="font-medium">{order.total}</TableCell>
           <TableCell className="hidden md:table-cell">{order.date}</TableCell>
-          <TableCell className="hidden lg:table-cell">{order.items}</TableCell>
+          <TableCell className="hidden lg:table-cell">{order.items.length}</TableCell>
           <TableCell className="text-right">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -216,7 +211,9 @@ const OrdersTable = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem>View details</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onViewDetails(order)}>
+                  View details
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Update Status</DropdownMenuLabel>
                 <DropdownMenuItem
@@ -248,6 +245,112 @@ const OrdersTable = ({
   </Table>
 );
 
+const OrderDetailsModal = ({
+  order,
+  onClose,
+}: {
+  order: Order | null;
+  onClose: () => void;
+}) => {
+  if (!order) return null;
+  console.log(order);
+  return (
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-2 md:p-6">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="text-lg font-bold">Order Details</h3>
+              <p className="text-sm text-muted-foreground">
+                Order ID: {order.id}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+            >
+              &times;
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h4 className="font-medium mb-2">Customer Information</h4>
+              <div className="space-y-1 text-sm">
+                <p>{order.customer}</p>
+                <p>{order.email}</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Order Information</h4>
+              <div className="space-y-1 text-sm">
+                <p>Status: <Badge className={getStatusColor(order.status)}>
+                  {order.status}
+                </Badge></p>
+                <p>Date: {order.date}</p>
+                <p>Total: {order.total}</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-medium mb-2">Items ({order.items.length})</h4>
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-right">Price</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    {/* <TableHead className="text-right">Total</TableHead> */}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {order.items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-4">
+                          {item.image && (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-10 h-10 rounded-md object-cover"
+                            />
+                          )}
+                          <span>{item.name.slice(0, 50)}...</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ${item.price.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right">{item.quantity}</TableCell>
+                      {/* <TableCell className="text-right">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </TableCell> */}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -256,12 +359,19 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCopy = (id: string) => {
     navigator.clipboard.writeText(id).then(() => {
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 1000);
     });
+  };
+
+  const handleViewDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setIsModalOpen(true);
   };
 
   useEffect(() => {
@@ -293,7 +403,13 @@ export default function OrdersPage() {
             date: order.order_date
               ? format(new Date(order.order_date), "PPpp")
               : "N/A",
-            items: order.items?.length || 0,
+            items: order.items?.map((item: any) => ({
+              id: item.id,
+              image: item.image,
+              name: item.title || "Unknown Product",
+              price: item.price || 0,
+              quantity: item.quantity || 0,
+            })) || [],
           }));
           setOrders(formattedOrders);
         }
@@ -424,7 +540,7 @@ export default function OrdersPage() {
                     onStatusUpdate={updateOrderStatus}
                     copiedId={copiedId}
                     onCopy={handleCopy}
-
+                    onViewDetails={handleViewDetails}
                   />
                 ))}
               </div>
@@ -435,12 +551,20 @@ export default function OrdersPage() {
                   copiedId={copiedId}
                   onStatusUpdate={updateOrderStatus}
                   onCopy={handleCopy}
+                  onViewDetails={handleViewDetails}
                 />
               </div>
             </>
           )}
         </CardContent>
       </Card>
+
+      {isModalOpen && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </motion.div>
   );
 }
