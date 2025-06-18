@@ -9,7 +9,7 @@ const supabase = createClient(
 
 export async function POST(request: Request) {
     // console.log("API route hit");
-    const { items, email, user_id, totalPrice } = await request.json();
+    const { items, email, user_id, totalPrice, user } = await request.json();
     if (!items || !email || !user_id || totalPrice === 0) {
         console.error("Missing required fields");
         return NextResponse.json({ error: "Missing data" }, { status: 400 });
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
             email,
             items,
             total_amount: totalPrice,
+            order_user: user
         });
 
         if (insertErr) throw insertErr;

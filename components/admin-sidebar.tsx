@@ -1,6 +1,6 @@
 "use client"
 
-import type * as React from "react"
+import React, { useEffect, useState } from "react"
 import { BarChart3, Package, ShoppingCart, Users, Settings, Home, Package2, LogOut } from "lucide-react"
 
 import {
@@ -26,6 +26,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import { createClient } from "@/utils/supabase/client"
+import { getUserProfile } from "@/utils/profile"
+
 
 const data = {
   navMain: [
@@ -63,6 +66,23 @@ const data = {
 }
 
 export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = await createClient();
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user?.id) {
+        const profile = await getUserProfile(user.id);
+        setUser(profile);
+      }
+    };
+    fetchUser();
+  }, []);
+
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -74,8 +94,8 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                   <Package2 className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">E-Store Admin</span>
-                  <span className="truncate text-xs">Management Panel</span>
+                  <span className="truncate font-semibold text-base">Admin Dashboard</span>
+                  <span className="truncate font-semibold text-xs">KEEBHOUS</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -111,12 +131,12 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Admin" />
+                    <AvatarImage src={user?.avatar_url} alt="Admin" />
                     <AvatarFallback className="rounded-lg">AD</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Admin User</span>
-                    <span className="truncate text-xs">admin@store.com</span>
+                    <span className="truncate font-semibold">{user?.full_name}</span>
+                    <span className="truncate text-xs">{user?.email}</span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -129,12 +149,12 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Admin" />
+                      <AvatarImage src={user?.avatar_url} alt="Admin" />
                       <AvatarFallback className="rounded-lg">AD</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">Admin User</span>
-                      <span className="truncate text-xs">admin@store.com</span>
+                      <span className="truncate font-semibold">{user?.full_name}</span>
+                      <span className="truncate text-xs">{user?.email}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>

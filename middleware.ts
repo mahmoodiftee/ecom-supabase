@@ -20,35 +20,35 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const publicRoutes = ['/', '/home', '/keyboards', '/sign-in', '/sign-up', '/forgot-password'];
-  const userRoutes = ['/', '/home', '/keyboards', '/profile', '/cart', '/notifications', '/admin'];
+  // const publicRoutes = ['/', '/home', '/keyboards', '/sign-in', '/sign-up', '/forgot-password'];
+  // const userRoutes = ['/', '/home', '/keyboards', '/profile', '/cart', '/notifications', '/admin', '/confirm-payment', '/success'];
 
-  //Not logged in
-  if (!user) {
-    if (!publicRoutes.includes(pathname)) {
-      // Redirect to sign-in if trying to access restricted route
-      return NextResponse.redirect(new URL('/sign-in', request.url));
-    }
-  } else {
+  // //Not logged in
+  // if (!user) {
+  //   if (!publicRoutes.includes(pathname)) {
+  //     // Redirect to sign-in if trying to access restricted route
+  //     return NextResponse.redirect(new URL('/sign-in', request.url));
+  //   }
+  // } else {
 
 
-    //Logged in users
-    if (role === 'user') {
-      // user cannot access /dashboard* routes
-      if (pathname.startsWith('/dashboard')) {
-        return NextResponse.redirect(new URL('/', request.url));
-      }
-      // user can only access allowed userRoutes
-      if (!userRoutes.includes(pathname)) {
-        return NextResponse.redirect(new URL('/', request.url));
-      }
-    } else if (role === 'admin') {
-      // admin can only access /dashboard* routes
-      if (!pathname.startsWith('/dashboard')) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      }
-    }
-  }
+  //   //Logged in users
+  //   if (role === 'user') {
+  //     // user cannot access /dashboard* routes
+  //     if (pathname.startsWith('/dashboard')) {
+  //       return NextResponse.redirect(new URL('/', request.url));
+  //     }
+  //     // user can only access allowed userRoutes
+  //     if (!userRoutes.includes(pathname)) {
+  //       return NextResponse.redirect(new URL('/', request.url));
+  //     }
+  //   } else if (role === 'admin') {
+  //     // admin can only access /dashboard* routes
+  //     if (!pathname.startsWith('/dashboard')) {
+  //       return NextResponse.redirect(new URL('/dashboard', request.url));
+  //     }
+  //   }
+  // }
 
   return NextResponse.next();
 }

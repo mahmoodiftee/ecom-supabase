@@ -199,6 +199,7 @@ const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number
             totalPrice: Math.round(totalPrice),
             email: user?.email,
             user_id: user?.id,
+            user: user
           }),
         });
 
