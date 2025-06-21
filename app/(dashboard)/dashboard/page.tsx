@@ -7,33 +7,9 @@ import { RecentSales } from "@/components/recent-sales"
 import { CalendarDateRangePicker } from "@/components/date-range-picker"
 import { Button } from "@/components/ui/button"
 import { Download, Users, ShoppingCart, Package, TrendingUp } from "lucide-react"
-
-const stats = [
-  {
-    title: "Total Revenue",
-    value: "$45,231.89",
-    change: "+20.1% from last month",
-    icon: TrendingUp,
-  },
-  {
-    title: "Orders",
-    value: "+2,350",
-    change: "+180.1% from last month",
-    icon: ShoppingCart,
-  },
-  {
-    title: "Products",
-    value: "+12,234",
-    change: "+19% from last month",
-    icon: Package,
-  },
-  {
-    title: "Active Users",
-    value: "+573",
-    change: "+201 since last hour",
-    icon: Users,
-  },
-]
+import { useEffect, useState } from "react"
+import { createClient } from "@/utils/supabase/client"
+import { DateRange } from "react-day-picker"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -57,6 +33,170 @@ const itemVariants = {
 }
 
 export default function DashboardPage() {
+  const [orders, setOrders] = useState<any[]>([])
+  const [profiles, setProfiles] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
+  const [stats, setStats] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = createClient()
+      setLoading(true)
+
+      try {
+        // Build date filters if range is selected
+        const dateFilters = dateRange?.from && dateRange?.to ? {
+          gte: dateRange.from.toISOString(),
+          lte: dateRange.to.toISOString()
+        } : {}
+
+        const [
+          { data: ordersData },
+          { data: profilesData },
+          { data: productsData }
+        ] = await Promise.all([
+          supabase.from("orders")
+            .select("*")
+            .gte('order_date', dateFilters.gte || new Date(0).toISOString())
+            .lte('order_date', dateFilters.lte || new Date().toISOString())
+            .order("order_date", { ascending: false }),
+          supabase.from('profiles').select("*"),
+          supabase.from('keyboards').select("*")
+        ])
+
+        setOrders(ordersData ?? [])
+        setProfiles(profilesData ?? [])
+        setProducts(productsData ?? [])
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [dateRange])
+
+  useEffect(() => {
+    // Calculate stats whenever data changes
+    if (orders.length > 0 || profiles.length > 0 || products.length > 0) {
+      const calculateStats = () => {
+        // Revenue calculations
+        const totalRevenue = orders
+          .filter(order => order.status !== 'Cancelled')
+          .reduce((sum, order) => sum + order.total_amount, 0)
+
+        // Previous period comparison (default to last 30 days)
+        const now = new Date()
+        const currentPeriodStart = dateRange?.from || new Date(now)
+        currentPeriodStart.setDate(currentPeriodStart.getDate() - 30)
+        const previousPeriodStart = new Date(currentPeriodStart)
+        previousPeriodStart.setDate(previousPeriodStart.getDate() - 30)
+
+        const currentPeriodRevenue = orders
+          .filter(order => {
+            const orderDate = new Date(order.order_date)
+            return (!dateRange || (orderDate >= currentPeriodStart)) && 
+                   order.status !== 'Cancelled'
+          })
+          .reduce((sum, order) => sum + order.total_amount, 0)
+
+        const previousPeriodRevenue = orders
+          .filter(order => {
+            const orderDate = new Date(order.order_date)
+            return orderDate >= previousPeriodStart && 
+                   orderDate < currentPeriodStart && 
+                   order.status !== 'Cancelled'
+          })
+          .reduce((sum, order) => sum + order.total_amount, 0)
+
+        const revenueChange = previousPeriodRevenue > 0 
+          ? ((currentPeriodRevenue - previousPeriodRevenue) / previousPeriodRevenue) * 100
+          : currentPeriodRevenue > 0 ? 100 : 0
+
+        // Orders calculations
+        const totalOrders = orders.length
+        const currentPeriodOrders = orders.filter(order => {
+          const orderDate = new Date(order.order_date)
+          return !dateRange || orderDate >= currentPeriodStart
+        }).length
+
+        const previousPeriodOrders = orders.filter(order => {
+          const orderDate = new Date(order.order_date)
+          return orderDate >= previousPeriodStart && orderDate < currentPeriodStart
+        }).length
+
+        const ordersChange = previousPeriodOrders > 0
+          ? ((currentPeriodOrders - previousPeriodOrders) / previousPeriodOrders) * 100
+          : currentPeriodOrders > 0 ? 100 : 0
+
+        // Products count
+        const totalProducts = products.length
+        // This would need your business logic for product changes
+        const productsChange = 19 // Example value - replace with your logic
+
+        // Active users (last 30 days)
+        const activeUsers = profiles.filter(profile => {
+          if (!profile.last_sign_in_at) return false
+          const lastSignIn = new Date(profile.last_sign_in_at)
+          return lastSignIn >= currentPeriodStart
+        }).length
+
+        const previousActiveUsers = profiles.filter(profile => {
+          if (!profile.last_sign_in_at) return false
+          const lastSignIn = new Date(profile.last_sign_in_at)
+          return lastSignIn >= previousPeriodStart && lastSignIn < currentPeriodStart
+        }).length
+
+        const activeUsersChange = previousActiveUsers > 0
+          ? ((activeUsers - previousActiveUsers) / previousActiveUsers) * 100
+          : activeUsers > 0 ? 100 : 0
+
+        return [
+          {
+            title: "Total Revenue",
+            value: new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'BDT'
+            }).format(totalRevenue),
+            change: `${revenueChange >= 0 ? '+' : ''}${Math.abs(revenueChange).toFixed(1)}% from last period`,
+            icon: TrendingUp,
+          },
+          {
+            title: "Orders",
+            value: `+${currentPeriodOrders}`,
+            change: `${ordersChange >= 0 ? '+' : ''}${Math.abs(ordersChange).toFixed(1)}% from last period`,
+            icon: ShoppingCart,
+          },
+          {
+            title: "Products",
+            value: `+${totalProducts}`,
+            change: `+${productsChange}% from last month`, // Replace with your logic
+            icon: Package,
+          },
+          {
+            title: "Active Users",
+            value: `+${activeUsers}`,
+            change: `${activeUsersChange >= 0 ? '+' : ''}${Math.abs(activeUsersChange).toFixed(1)} since last period`,
+            icon: Users,
+          },
+        ]
+      }
+
+      setStats(calculateStats())
+    }
+  }, [orders, profiles, products, dateRange])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
   return (
     <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
       <motion.div
@@ -66,7 +206,7 @@ export default function DashboardPage() {
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
           <div className="hidden sm:block">
-            <CalendarDateRangePicker />
+            <CalendarDateRangePicker onDateChange={setDateRange} />
           </div>
           <Button size="sm" className="w-full sm:w-auto">
             <Download className="mr-2 h-4 w-4" />
@@ -103,16 +243,18 @@ export default function DashboardPage() {
             <CardTitle>Overview</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <Overview />
+            <Overview orders={orders}  />
           </CardContent>
         </Card>
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Recent Sales</CardTitle>
-            <CardDescription className="hidden sm:block">You made 265 sales this month.</CardDescription>
+            <CardDescription className="hidden sm:block">
+              {orders.length > 0 ? `You made ${orders.length} sales this period.` : 'No sales data available.'}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <RecentSales />
+            <RecentSales orders={orders} />
           </CardContent>
         </Card>
       </motion.div>

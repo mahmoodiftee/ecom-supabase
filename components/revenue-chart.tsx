@@ -3,14 +3,11 @@
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
-const data = [
-  { month: "Jan", revenue: 4000, profit: 2400 },
-  { month: "Feb", revenue: 3000, profit: 1398 },
-  { month: "Mar", revenue: 2000, profit: 9800 },
-  { month: "Apr", revenue: 2780, profit: 3908 },
-  { month: "May", revenue: 1890, profit: 4800 },
-  { month: "Jun", revenue: 2390, profit: 3800 },
-]
+type MonthlyData = {
+  month: string
+  revenue: number
+  profit: number
+}
 
 const chartConfig = {
   revenue: {
@@ -23,7 +20,39 @@ const chartConfig = {
   },
 }
 
-export function RevenueChart() {
+export function RevenueChart({ orders }: { orders: any[] }) {
+  const processOrdersData = (orders: any[]): MonthlyData[] => {
+
+    const monthlyData: Record<string, { revenue: number; profit: number }> = {}
+    
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    months.forEach(month => {
+      monthlyData[month] = { revenue: 0, profit: 0 }
+    })
+    
+    orders.forEach(order => {
+      if (order.status !== 'Cancelled') { 
+        const orderDate = new Date(order.order_date)
+        const month = months[orderDate.getMonth()]
+        const orderTotal = order.total_amount
+        
+
+        const profit = orderTotal * 0.3
+        
+        monthlyData[month].revenue += orderTotal
+        monthlyData[month].profit += profit
+      }
+    })
+    
+    return months.map(month => ({
+      month,
+      revenue: monthlyData[month].revenue,
+      profit: monthlyData[month].profit,
+    }))
+  }
+
+  const data = processOrdersData(orders)
+
   return (
     <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
       <ResponsiveContainer width="100%" height="100%">

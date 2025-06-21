@@ -3,14 +3,11 @@
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
-const data = [
-  { month: "Jan", newUsers: 400, activeUsers: 240 },
-  { month: "Feb", newUsers: 300, activeUsers: 139 },
-  { month: "Mar", newUsers: 200, activeUsers: 980 },
-  { month: "Apr", newUsers: 278, activeUsers: 390 },
-  { month: "May", newUsers: 189, activeUsers: 480 },
-  { month: "Jun", newUsers: 239, activeUsers: 380 },
-]
+type UserAnalyticsData = {
+  month: string
+  newUsers: number
+  activeUsers: number
+}
 
 const chartConfig = {
   newUsers: {
@@ -23,7 +20,43 @@ const chartConfig = {
   },
 }
 
-export function UserAnalytics() {
+export function UserAnalytics({ authUsers }: { authUsers: any[] }) {
+  const processAuthData = (users: any[]): UserAnalyticsData[] => {
+    const monthlyData: Record<string, { newUsers: number; activeUsers: number }> = {}
+    
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    months.forEach(month => {
+      monthlyData[month] = { newUsers: 0, activeUsers: 0 }
+    })
+    
+    users.forEach(user => {
+      try {
+        const createdAt = new Date(user.created_at)
+        const month = months[createdAt.getMonth()]
+        
+        monthlyData[month].newUsers += 1
+        
+        const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at) : null
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        
+        if (lastSignIn && lastSignIn > thirtyDaysAgo) {
+          monthlyData[month].activeUsers += 1
+        }
+      } catch (error) {
+        console.error('Error processing user:', user, error)
+      }
+    })
+    
+    return months.map(month => ({
+      month,
+      newUsers: monthlyData[month].newUsers,
+      activeUsers: monthlyData[month].activeUsers,
+    }))
+  }
+
+  const data = processAuthData(authUsers)
+
   return (
     <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
       <ResponsiveContainer width="100%" height="100%">

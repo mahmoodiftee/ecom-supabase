@@ -1,50 +1,53 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-const recentSales = [
-  {
-    name: "Olivia Martin",
-    email: "olivia.martin@email.com",
-    amount: "+$1,999.00",
-    avatar: "/placeholder.svg?height=32&width=32",
-    initials: "OM",
-  },
-  {
-    name: "Jackson Lee",
-    email: "jackson.lee@email.com",
-    amount: "+$39.00",
-    avatar: "/placeholder.svg?height=32&width=32",
-    initials: "JL",
-  },
-  {
-    name: "Isabella Nguyen",
-    email: "isabella.nguyen@email.com",
-    amount: "+$299.00",
-    avatar: "/placeholder.svg?height=32&width=32",
-    initials: "IN",
-  },
-  {
-    name: "William Kim",
-    email: "will@email.com",
-    amount: "+$99.00",
-    avatar: "/placeholder.svg?height=32&width=32",
-    initials: "WK",
-  },
-  {
-    name: "Sofia Davis",
-    email: "sofia.davis@email.com",
-    amount: "+$39.00",
-    avatar: "/placeholder.svg?height=32&width=32",
-    initials: "SD",
-  },
-]
+interface RecentSale {
+  id: string
+  name: string
+  email: string
+  amount: string
+  avatar?: string
+  initials: string
+}
 
-export function RecentSales() {
+interface RecentSalesProps {
+  orders: any[]
+  limit?: number
+}
+
+export function RecentSales({ orders, limit = 5 }: RecentSalesProps) {
+  // Transform orders into recent sales format
+  const recentSales: RecentSale[] = orders
+    .slice(0, limit) // Get most recent orders
+    .map(order => {
+      const user = order.order_user || {}
+      const firstName = user.full_name?.split(' ')[0] || 'Customer'
+      const lastName = user.full_name?.split(' ')[1] || ''
+      const initials = `${firstName[0]}${lastName[0] || ''}`.toUpperCase()
+
+      return {
+        id: order.id,
+        name: user.full_name || 'Customer',
+        email: user.email || 'No email',
+        amount: `+$${order.total_amount.toFixed(2)}`,
+        avatar: user.avatar_url || undefined,
+        initials
+      }
+    })
+
+  if (recentSales.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <p className="text-sm text-muted-foreground">No recent sales data available</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
-      {recentSales.map((sale, index) => (
-        <div key={index} className="flex items-center">
+      {recentSales.map((sale) => (
+        <div key={sale.id} className="flex items-center">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={sale.avatar || "/placeholder.svg"} alt="Avatar" />
+            <AvatarImage src={sale.avatar} alt="Avatar" />
             <AvatarFallback>{sale.initials}</AvatarFallback>
           </Avatar>
           <div className="ml-4 space-y-1">

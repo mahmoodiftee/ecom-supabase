@@ -3,57 +3,6 @@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
-const data = [
-  {
-    name: "Jan",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Feb",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Mar",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Apr",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "May",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Jun",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Jul",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Aug",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Sep",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Oct",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Nov",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Dec",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-]
-
 const chartConfig = {
   total: {
     label: "Total Revenue",
@@ -61,7 +10,40 @@ const chartConfig = {
   },
 }
 
-export function Overview() {
+type MonthlyRevenueData = {
+  name: string
+  total: number
+}
+
+export function Overview({ orders }: { orders: any[] }) {
+  const processOrdersData = (orders: any[]): MonthlyRevenueData[] => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const monthlyRevenue: Record<string, number> = {}
+
+    months.forEach(month => {
+      monthlyRevenue[month] = 0
+    })
+
+    orders.forEach(order => {
+      if (order.status !== 'Cancelled') { 
+        try {
+          const orderDate = new Date(order.order_date)
+          const month = months[orderDate.getMonth()]
+          monthlyRevenue[month] += order.total_amount
+        } catch (error) {
+          console.error('Error processing order:', order, error)
+        }
+      }
+    })
+
+    return months.map(month => ({
+      name: month,
+      total: monthlyRevenue[month]
+    }))
+  }
+
+  const data = processOrdersData(orders)
+
   return (
     <ChartContainer config={chartConfig} className="h-[250px] sm:h-[350px]">
       <ResponsiveContainer width="100%" height="100%">
