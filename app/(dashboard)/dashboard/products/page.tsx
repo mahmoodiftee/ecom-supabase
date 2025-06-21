@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,97 +15,85 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { MoreHorizontal, Search, Plus } from "lucide-react"
+import { MoreHorizontal, Search, Plus, Trash } from "lucide-react"
 import Image from "next/image"
-
-const products = [
-  {
-    id: "1",
-    name: "Wireless Headphones",
-    description: "High-quality wireless headphones with noise cancellation",
-    price: "$199.99",
-    stock: 45,
-    category: "Electronics",
-    image: "/placeholder.svg?height=64&width=64",
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Smart Watch",
-    description: "Feature-rich smartwatch with health tracking",
-    price: "$299.99",
-    stock: 23,
-    category: "Electronics",
-    image: "/placeholder.svg?height=64&width=64",
-    status: "Active",
-  },
-  {
-    id: "3",
-    name: "Coffee Maker",
-    description: "Automatic coffee maker with programmable settings",
-    price: "$89.99",
-    stock: 0,
-    category: "Appliances",
-    image: "/placeholder.svg?height=64&width=64",
-    status: "Out of Stock",
-  },
-  {
-    id: "4",
-    name: "Yoga Mat",
-    description: "Premium yoga mat with excellent grip",
-    price: "$39.99",
-    stock: 78,
-    category: "Fitness",
-    image: "/placeholder.svg?height=64&width=64",
-    status: "Active",
-  },
-  {
-    id: "5",
-    name: "Laptop Stand",
-    description: "Adjustable aluminum laptop stand",
-    price: "$49.99",
-    stock: 32,
-    category: "Electronics",
-    image: "/placeholder.svg?height=64&width=64",
-    status: "Active",
-  },
-  {
-    id: "6",
-    name: "Wireless Mouse",
-    description: "Ergonomic wireless mouse with precision tracking",
-    price: "$29.99",
-    stock: 67,
-    category: "Electronics",
-    image: "/placeholder.svg?height=64&width=64",
-    status: "Active",
-  },
-]
-
-const getStockColor = (stock: number) => {
-  if (stock === 0) return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-  if (stock < 10) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-  return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-}
+import Link from "next/link"
+import { createClient } from "@/utils/supabase/client"
+import { Separator } from "@/components/ui/separator"
+import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [productsData, setProductsData] = useState<any[]>([])
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<string | null>(null)
 
-  const filteredProducts = products.filter(
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const fetchProducts = async () => {
+    const supabase = createClient()
+    try {
+      const { data: productsData, error: productsError } = await supabase
+        .from("keyboards")
+        .select("*")
+
+      if (productsError) throw productsError
+
+      setProductsData(productsData || [])
+    } catch (err) {
+      console.error("Error fetching data:", err)
+      toast.error("Failed to load products")
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!productToDelete) return
+
+    setIsDeleting(true)
+    const supabase = createClient()
+
+    try {
+      const { error } = await supabase
+        .from("keyboards")
+        .delete()
+        .eq("id", productToDelete)
+
+      if (error) throw error
+
+      toast.success("Product deleted successfully")
+      fetchProducts() // Refresh the list
+    } catch (err) {
+      console.error("Error deleting product:", err)
+      toast.error("Failed to delete product")
+    } finally {
+      setIsDeleting(false)
+      setDeleteDialogOpen(false)
+      setProductToDelete(null)
+    }
+  }
+
+  const openDeleteDialog = (productId: string) => {
+    setProductToDelete(productId)
+    setDeleteDialogOpen(true)
+  }
+
+  const filteredProducts = productsData.filter(
     (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase()),
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.stock.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   return (
@@ -115,53 +103,36 @@ export default function ProductsPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the product and remove its data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Products</h2>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Product
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] mx-4">
-            <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
-              <DialogDescription>Add a new product to your inventory. Fill in the details below.</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input id="name" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="price" className="text-right">
-                  Price
-                </Label>
-                <Input id="price" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="stock" className="text-right">
-                  Stock
-                </Label>
-                <Input id="stock" type="number" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description
-                </Label>
-                <Textarea id="description" className="col-span-3" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={() => setIsAddDialogOpen(false)}>
-                Add Product
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Link href="/dashboard/products/new-product">
+          <Button variant="default">
+            <Plus className="mr-2 h-4 w-4" />
+            New Product
+          </Button>
+        </Link>
       </div>
 
       <Card>
@@ -196,15 +167,14 @@ export default function ProductsPage() {
                   <div className="flex items-center space-x-3 flex-1">
                     <Image
                       src={product.image || "/placeholder.svg"}
-                      alt={product.name}
+                      alt={product.title}
                       width={60}
                       height={60}
                       className="rounded-md object-cover"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{product.name}</div>
-                      <div className="text-sm text-muted-foreground line-clamp-2">{product.description}</div>
-                      <div className="text-sm text-muted-foreground">{product.category}</div>
+                      <div className="font-medium truncate">{product.title.slice(0, 20)}...</div>
+                      <div className="text-sm text-muted-foreground ">{product.brand}</div>
                     </div>
                   </div>
                   <DropdownMenu>
@@ -216,21 +186,35 @@ export default function ProductsPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>View details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit product</DropdownMenuItem>
-                      <DropdownMenuItem>Duplicate</DropdownMenuItem>
+                      <Separator />
+                      <DropdownMenuItem>
+                        <Link href={`/dashboard/products/keyboard-details?id=${product.id}?name=${encodeURIComponent(product.title.replace(/\s+/g, "-"))}`}>
+                          View details
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href={`/dashboard/products/new-product/${product.id}`}>
+                          Edit product
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600">Delete product</DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => openDeleteDialog(product.id)}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete product
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="font-medium text-lg">{product.price}</div>
+                  <div className="font-medium">
+                    <span className="mr-1 font-bold text-muted-foreground">৳</span>
+                    {parseFloat(product.price).toFixed(2)}
+                  </div>
                   <div className="flex items-center space-x-2">
-                    <Badge className={getStockColor(product.stock)}>
-                      {product.stock === 0 ? "Out of Stock" : `${product.stock} in stock`}
-                    </Badge>
-                    <Badge variant={product.status === "Active" ? "default" : "secondary"}>{product.status}</Badge>
+                    <Badge variant={product.stock === "inStock" ? "default" : "destructive"}>{product.stock}</Badge>
                   </div>
                 </div>
               </motion.div>
@@ -243,10 +227,10 @@ export default function ProductsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
-                  <TableHead className="hidden md:table-cell">Category</TableHead>
+                  <TableHead className="hidden md:table-cell">Quantity</TableHead>
+                  <TableHead className="hidden lg:table-cell">Status</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
-                  <TableHead className="hidden lg:table-cell">Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -263,26 +247,30 @@ export default function ProductsPage() {
                       <div className="flex items-center space-x-3">
                         <Image
                           src={product.image || "/placeholder.svg"}
-                          alt={product.name}
+                          alt={product.title}
                           width={40}
                           height={40}
                           className="rounded-md object-cover"
                         />
-                        <div>
-                          <div className="font-medium">{product.name}</div>
-                          <div className="text-sm text-muted-foreground line-clamp-1">{product.description}</div>
+                        <div className="w-full flex-1">
+                          <div className="font-medium">{product.title.slice(0, 50)}...</div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">{product.category}</TableCell>
-                    <TableCell className="font-medium">{product.price}</TableCell>
+
+                    <TableCell className="hidden md:table-cell pl-10">{product.quantity}</TableCell>
+
                     <TableCell>
-                      <Badge className={getStockColor(product.stock)}>
-                        {product.stock === 0 ? "Out of Stock" : `${product.stock} in stock`}
-                      </Badge>
+                      <Badge variant={product.stock === "inStock" ? "default" : "destructive"}>{product.stock}</Badge>
                     </TableCell>
+
+                    <TableCell className="font-medium">
+                      <span className="mr-1 font-bold text-muted-foreground">৳</span>
+                      {parseFloat(product.price).toFixed(2)}
+                    </TableCell>
+
                     <TableCell className="hidden lg:table-cell">
-                      <Badge variant={product.status === "Active" ? "default" : "secondary"}>{product.status}</Badge>
+                      <Badge variant="secondary">{product.brand}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -294,11 +282,25 @@ export default function ProductsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>View details</DropdownMenuItem>
-                          <DropdownMenuItem>Edit product</DropdownMenuItem>
-                          <DropdownMenuItem>Duplicate</DropdownMenuItem>
+                          <Separator />
+                          <DropdownMenuItem>
+                            <Link href={`/dashboard/products/keyboard-details/${product.id}?name=${encodeURIComponent(product.title.replace(/\s+/g, "-"))}`}>
+                              View details
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Link href={`/dashboard/products/new-product?id=${product.id}`}>
+                              Edit product
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600">Delete product</DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => openDeleteDialog(product.id)}
+                          >
+                            <Trash className="mr-2 h-4 w-4" />
+                            Delete product
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

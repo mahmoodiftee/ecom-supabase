@@ -209,6 +209,7 @@ export const signUpAction = async (formData: FormData) => {
   // 3. Create profile record
   const { error: profileError } = await supabase.from("profiles").insert({
     id: authData.user.id,
+    status: "Registered",
     email,
     phone,
     full_name,

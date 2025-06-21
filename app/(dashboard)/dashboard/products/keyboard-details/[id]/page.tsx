@@ -1,0 +1,37 @@
+import { notFound } from "next/navigation";
+import { supabasePublic } from "@/utils/supabase/publicClient";
+import ProductDetail from "../singleKeyboard";
+
+export default async function KeyboardsPage({
+    params,
+}: {
+    params: { id: string };
+}) {
+
+
+    const { data: keyboards, error } = await supabasePublic
+        .from("keyboards")
+        .select("*");
+
+    if (error) {
+        console.error("Error fetching data from Supabase:", error);
+        notFound();
+    }
+
+    if (!keyboards || keyboards.length === 0) {
+        notFound();
+    }
+
+    const { id } = params;
+    console.log("Product ID from URL:", id);
+
+    // Ensure both `id` and `product.id` are of the same type
+    const product = keyboards.find((p) => String(p.id) === String(id));
+
+    if (!product) {
+        console.log("Product not found:", id);
+        notFound();
+    }
+
+    return <ProductDetail product={product} />;
+}
