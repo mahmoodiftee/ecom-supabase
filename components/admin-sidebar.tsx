@@ -28,6 +28,10 @@ import {
 import Link from "next/link"
 import { createClient } from "@/utils/supabase/client"
 import { getUserProfile } from "@/utils/profile"
+import { ThemeSwitcher } from "./theme-switcher"
+import { SignOut } from "./singOut"
+import { signOutAction } from "@/app/actions"
+import { Button } from "./ui/button"
 
 
 const data = {
@@ -56,12 +60,7 @@ const data = {
       title: "Users",
       url: "/dashboard/users",
       icon: Users,
-    },
-    {
-      title: "Settings",
-      url: "/dashboard/settings",
-      icon: Settings,
-    },
+    }
   ],
 }
 
@@ -82,6 +81,11 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
     fetchUser();
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("cart");
+    signOutAction();
+    setUser(null);
+  };
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -90,13 +94,14 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                {/* <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Package2 className="size-4" />
-                </div>
+                </div> */}
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold text-base">Admin Dashboard</span>
                   <span className="truncate font-semibold text-xs">KEEBHOUS</span>
                 </div>
+                <ThemeSwitcher />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -122,56 +127,23 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user?.avatar_url} alt="Admin" />
-                    <AvatarFallback className="rounded-lg">AD</AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{user?.full_name}</span>
-                    <span className="truncate text-xs">{user?.email}</span>
-                  </div>
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side="bottom"
-                align="end"
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={user?.avatar_url} alt="Admin" />
-                      <AvatarFallback className="rounded-lg">AD</AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">{user?.full_name}</span>
-                      <span className="truncate text-xs">{user?.email}</span>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Settings />
-                  Account Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <LogOut />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+          <Avatar className="h-8 w-8 rounded-lg">
+            <AvatarImage src={user?.avatar_url} alt="Admin" />
+            <AvatarFallback className="rounded-lg">AD</AvatarFallback>
+          </Avatar>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">{user?.full_name}</span>
+            <span className="truncate text-xs">{user?.email}</span>
+          </div>
+        </div>
+        <Button
+          onClick={handleLogout}
+          className="w-full flex justify-between items-center gap-2"
+          variant={"outline"}
+        >
+          Logout <LogOut className="size-3" />
+        </Button>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
