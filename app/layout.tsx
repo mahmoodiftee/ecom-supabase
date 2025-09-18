@@ -5,7 +5,8 @@ import "./globals.css";
 import { CartProvider } from "@/context/cart-context";
 import SmoothScroll from "@/components/SmoothScrollWrapper/SmoothScroll";
 import { CartDrawer } from "@/components/cart";
-import { Toaster } from "@/components/ui/toaster";
+// import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import DesktopNav from "@/components/navbars/desktop-nav";
 import MobileNav from "@/components/navbars/mobile-nav";
 import { UserProvider } from "@/context/ProfileContext";
@@ -85,7 +86,7 @@ export default async function RootLayout({
                       )
                       }
                       <CartDrawer />
-                      <Toaster />
+                      <Toaster position="bottom-left" />
                     </div>
                   </main>
                 </UserProvider2>

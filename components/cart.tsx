@@ -42,16 +42,16 @@ export function CartDrawer() {
   } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const router = useRouter();
-
+  // console.log(items);
   const handleCheckout = async () => {
     setIsCheckingOut(true);
-    setIsOpen(false)
+    setIsOpen(false);
     router.push("/confirm-payment?fromCheckout=true");
     setIsCheckingOut(false);
   };
 
   const handleContinueShopping = () => {
-    setIsOpen(false)
+    setIsOpen(false);
     router.push("/keyboards");
   };
 

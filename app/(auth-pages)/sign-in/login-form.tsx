@@ -7,7 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 export function ClientSignInForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { setUser } = useUser();
   const router = useRouter();
 
@@ -37,8 +41,9 @@ export function ClientSignInForm() {
     }
   };
 
+
   return (
-    <form className="flex-1 flex flex-col min-w-64" action={handleSubmit}>
+    <form className="flex-1 flex flex-col min-w-64 md:min-w-[400px]" action={handleSubmit}>
       <h1 className="text-2xl font-medium">Sign in</h1>
       <p className="text-sm text-foreground">
         Don't have an account?{" "}
@@ -47,8 +52,37 @@ export function ClientSignInForm() {
         </Link>
       </p>
       <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
+        <div className="flex flex-col">
+          <div className="mb-2">Tap on the credentials below for exploring</div>
+          <div className="flex flex-col md:flex-row gap-2 [&>input]:mb-3">
+            <Button
+              className="w-full flex justify-between items-center gap-2"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setEmail("mahmoodiftee@gmail.com");
+                setPassword("123456");
+              }}
+            >
+              User
+            </Button>
+
+            <Button
+              className="w-full flex justify-between items-center gap-2"
+              variant={"outline"}
+              onClick={(e) => {
+                e.preventDefault();
+                setEmail("iftee7264@gmail.com");
+                setPassword("123456");
+              }}
+            >
+              Admin
+            </Button>
+
+          </div>
+        </div>
         <Label htmlFor="email">Email</Label>
-        <Input name="email" placeholder="you@example.com" required />
+        <Input name="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
         <div className="flex justify-between items-center">
           <Label htmlFor="password">Password</Label>
           <Link
@@ -58,12 +92,7 @@ export function ClientSignInForm() {
             Forgot Password?
           </Link>
         </div>
-        <Input
-          type="password"
-          name="password"
-          placeholder="Your password"
-          required
-        />
+        <Input type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Your password" required />
         <SubmitButton pendingText="Signing In..." formAction={signInAction}>
           Sign in
         </SubmitButton>

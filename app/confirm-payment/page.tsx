@@ -259,15 +259,15 @@ const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number
               </div>
             </div>
           )}
-          <div className="h-10 pt-3 pl-1 bg-gray-100 rounded-lg">
+          <div className="h-10 pt-3 pl-1 rounded-lg">
             <CardElement
               options={{
                 style: {
                   base: {
                     fontSize: '16px',
-                    color: '#424770',
+                    color: '#ffffff',
                     '::placeholder': {
-                      color: '#aab7c4',
+                      color: '#ffffff',
                     },
                   },
                   invalid: {

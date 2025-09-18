@@ -7,11 +7,9 @@ export default async function KeyboardsPage({
 }: {
   params: { id: string };
 }) {
-
- 
   const { data: keyboards, error } = await supabasePublic
     .from("keyboards")
-    .select("*"); 
+    .select("*");
 
   if (error) {
     console.error("Error fetching data from Supabase:", error);
@@ -22,8 +20,8 @@ export default async function KeyboardsPage({
     notFound();
   }
 
-  const { id } = params;
-  console.log("Product ID from URL:", id);
+  const { id } = await params;
+  // console.log("Product ID from URL:", id);
 
   // Ensure both `id` and `product.id` are of the same type
   const product = keyboards.find((p) => String(p.id) === String(id));

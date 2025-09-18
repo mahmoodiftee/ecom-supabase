@@ -44,7 +44,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     0
   );
 
-
   useEffect(() => {
     const storedCart = localStorage.getItem("cart");
     if (storedCart) {
@@ -56,7 +55,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     }
   }, []);
-
 
   useEffect(() => {
     if (items.length > 0) {
@@ -83,6 +81,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             price: product.price,
             image: product.image,
             quantity,
+            stock: product.quantity,
             discount: product.discount,
           },
         ];

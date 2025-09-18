@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import Max from "./max";
 import { createBrowserClient } from "@supabase/ssr";
 import { getUserProfile } from "@/utils/profile";
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/components/ui/use-toast";
 export default function ProductDetail({ product }: { product: Products }) {
   const [quantity, setQuantity] = useState(1);
   const [prevQuantity, setPrevQuantity] = useState(1);
@@ -39,6 +39,7 @@ export default function ProductDetail({ product }: { product: Products }) {
   const [user, setUser] = useState<any>(null);
   const [bookmarkedIds, setBookmarkedIds] = useState<any[]>([]);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [cartQuantity, setCartQuantity] = useState(0);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -129,12 +130,12 @@ export default function ProductDetail({ product }: { product: Products }) {
       } else {
         setBookmarkedIds((prev) => prev.filter((id) => id !== productId));
       }
-      toast({ title: "Failed to add on wishlist.!", description: "Something went wrong while updating your wishlist." })
+      toast({
+        title: "Failed to add on wishlist.!",
+        description: "Something went wrong while updating your wishlist.",
+      });
     }
   };
-
-
-
 
   const reviewsPerPage = 2;
   useEffect(() => {
@@ -185,7 +186,29 @@ export default function ProductDetail({ product }: { product: Products }) {
       transition: { duration: 0.5, delay: 0.0 * i },
     }),
   };
+  useEffect(() => {
+    const cartString = localStorage.getItem("cart");
 
+    if (cartString) {
+      try {
+        const cart = JSON.parse(cartString);
+
+        if (Array.isArray(cart)) {
+          const item = cart.find((item) => item.id === product.id);
+
+          if (item) {
+            setCartQuantity(item.quantity);
+          } else {
+            setCartQuantity(0);
+          }
+        }
+      } catch (error) {
+        console.error("Invalid cart data in localStorage", error);
+      }
+    }
+  }, [product.id]);
+
+  console.log(quantity, cartQuantity)
 
   return (
     <Max>
@@ -333,8 +356,10 @@ export default function ProductDetail({ product }: { product: Products }) {
                     >
                       {showMoreDetails
                         ? product.description
-                        : product.description.split(" ").slice(0, 30).join(" ") +
-                        "..."}
+                        : product.description
+                            .split(" ")
+                            .slice(0, 30)
+                            .join(" ") + "..."}
                     </motion.p>
                   </motion.div>
                 </AnimatePresence>
@@ -429,28 +454,38 @@ export default function ProductDetail({ product }: { product: Products }) {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4">
+                  {/* {!(quantity >= 0) && ( */}
                   <Button
                     onClick={handleAddToCart}
-                    disabled={product.quantity <= 0}
+                    disabled={
+                      quantity >= product.quantity + 1 &&
+                      !(cartQuantity >= product.quantity)
+                    }
                     variant="default"
                     size="lg"
                   >
                     <ShoppingCart className="mr-2 h-5 w-5" />
                     Add to Cart
                   </Button>
+                  {/* )} */}
+
                   <Button
                     onClick={() => toggleBookmark(product.id)}
                     variant={isBookmarked ? "default" : "outline"}
                     size="lg"
                     disabled={!user}
-                    className={isBookmarked ? "bg-red-500 text-white hover:bg-red-600" : ""}
+                    className={
+                      isBookmarked
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : ""
+                    }
                   >
-                    <Heart fill={isBookmarked ? "white" : "black"} className="mr-2 h-5 w-5" />
+                    <Heart
+                      fill={isBookmarked ? "white" : "black"}
+                      className="mr-2 h-5 w-5"
+                    />
                     {isBookmarked ? "Remove from Wishlist" : "Add to Wishlist"}
                   </Button>
-
-
-
                 </div>
               </div>
 
@@ -484,13 +519,15 @@ export default function ProductDetail({ product }: { product: Products }) {
                         <ul className="list-disc pl-5 space-y-1">
                           <li>Contact our customer service</li>
                           <li>Package the item securely</li>
-                          <li>Ship to our returns center using provided label</li>
+                          <li>
+                            Ship to our returns center using provided label
+                          </li>
                         </ul>
                       </div>
                       <p>
                         Refunds will be processed within 5-7 business days after
-                        receiving the returned item. Return shipping costs are the
-                        responsibility of the customer unless the item was
+                        receiving the returned item. Return shipping costs are
+                        the responsibility of the customer unless the item was
                         defective.
                       </p>
                       <p>
@@ -522,16 +559,16 @@ export default function ProductDetail({ product }: { product: Products }) {
                             Express Shipping: 2-3 business days (additional $25)
                           </li>
                           <li>
-                            Next Day Delivery: Order by 2PM for next business day
-                            (additional $45)
+                            Next Day Delivery: Order by 2PM for next business
+                            day (additional $45)
                           </li>
                         </ul>
                       </div>
                       <p>
                         We ship to all 50 US states and select international
                         destinations. International shipping costs and delivery
-                        times vary by location. Import duties and taxes may apply
-                        for international orders.
+                        times vary by location. Import duties and taxes may
+                        apply for international orders.
                       </p>
                     </div>
                   </motion.div>
@@ -539,7 +576,9 @@ export default function ProductDetail({ product }: { product: Products }) {
               </Tabs>
 
               <div className="mt-8 space-y-6">
-                <h2 className="text-xl font-semibold">Product Specifications</h2>
+                <h2 className="text-xl font-semibold">
+                  Product Specifications
+                </h2>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="space-y-1">
                     <p className="font-medium">Brand</p>
@@ -620,7 +659,9 @@ export default function ProductDetail({ product }: { product: Products }) {
                       {Array.from({ length: totalPages }, (_, i) => (
                         <Button
                           key={i + 1}
-                          variant={currentPage === i + 1 ? "default" : "outline"}
+                          variant={
+                            currentPage === i + 1 ? "default" : "outline"
+                          }
                           size="sm"
                           onClick={() => setCurrentPage(i + 1)}
                         >
@@ -631,7 +672,9 @@ export default function ProductDetail({ product }: { product: Products }) {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                          setCurrentPage((prev) =>
+                            Math.min(totalPages, prev + 1)
+                          )
                         }
                         disabled={currentPage === totalPages}
                       >

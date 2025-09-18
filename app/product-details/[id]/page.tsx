@@ -77,6 +77,8 @@ const ProductDetails = () => {
     }
   }, []);
 
+  console.log(product?.quantity);
+
   const images = product?.images || [product?.images];
   const selectedImage = images[selectedImageIndex];
 
@@ -147,7 +149,6 @@ const ProductDetails = () => {
         >
           <div className="h-full w-full flex-1">
             <div className="relative h-[70%] w-full">
-              {/* Image Navigation Buttons */}
               {product.images.length > 1 && (
                 <>
                   <Button
@@ -181,7 +182,9 @@ const ProductDetails = () => {
                 >
                   <Image
                     src={
-                      typeof selectedImage === 'string' ? selectedImage : "/placeholder.svg?height=800&width=800"
+                      typeof selectedImage === "string"
+                        ? selectedImage
+                        : "/placeholder.svg?height=800&width=800"
                     }
                     alt={`${product.title} - Image ${selectedImageIndex + 1}`}
                     fill
@@ -209,7 +212,11 @@ const ProductDetails = () => {
                       )}
                     >
                       <Image
-                        src={typeof image === 'string' ? image : "/placeholder.svg?height=800&width=800"}
+                        src={
+                          typeof image === "string"
+                            ? image
+                            : "/placeholder.svg?height=800&width=800"
+                        }
                         alt={`${product.title} thumbnail ${index + 1}`}
                         fill
                         className="object-cover"
@@ -371,7 +378,7 @@ const ProductDetails = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   onClick={handleAddToCart}
-                  disabled={product.quantity <= 0}
+                  disabled={quantity <= 1}
                   variant="default"
                   size="lg"
                 >
