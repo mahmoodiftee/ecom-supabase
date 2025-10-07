@@ -70,12 +70,10 @@ export default async function KeyboardsPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Keyboards ({filteredProducts.length})</h1>
+      <h1 className="hidden md:flex text-3xl font-bold mb-8">Keyboards ({filteredProducts.length})</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1">
-          <ProductFilters brands={AllBrands} maxPrice={20000} />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-4 md:gap-8">
+        <ProductFilters brands={AllBrands} maxPrice={20000} />
 
         <div className="lg:col-span-3">
           <ProductGrid products={reversedProducts} />

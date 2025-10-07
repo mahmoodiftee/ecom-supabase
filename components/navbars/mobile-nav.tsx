@@ -47,10 +47,10 @@ export default function MobileNav({ navlinks }: MobileNavProps) {
   }, []);
 
   return (
-    <div className="lg:hidden w-full mx-auto flex justify-between items-center pl-2 mt-4">
+    <div className="bg-background lg:hidden sticky top-0 z-50 w-full mx-auto flex justify-between items-center py-3 pl-2">
       <div className="relative z-50 flex items-center font-semibold">
         <Link href="/" className="text-xl font-bold">
-          KEEBHOUS
+          KEEBHOUSE
         </Link>
       </div>
       <div className="w-full mx-auto flex justify-end items-center text-sm">

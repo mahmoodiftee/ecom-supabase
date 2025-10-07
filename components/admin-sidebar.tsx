@@ -99,7 +99,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                 </div> */}
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold text-base">Admin Dashboard</span>
-                  <span className="truncate font-semibold text-xs">KEEBHOUS</span>
+                  <span className="truncate font-semibold text-xs">KEEBHOUSE</span>
                 </div>
                 <ThemeSwitcher />
               </Link>

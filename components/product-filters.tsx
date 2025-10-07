@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { CheckedState } from "@radix-ui/react-checkbox"
+import { X, Filter } from "lucide-react"
 
 interface ProductFiltersProps {
   categories?: string[]
@@ -15,10 +16,13 @@ interface ProductFiltersProps {
   maxPrice?: number
 }
 
-export default function ProductFilters({  brands = [], maxPrice = 1000 }: ProductFiltersProps) {
+export default function ProductFilters({ brands = [], maxPrice = 1000 }: ProductFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+
+  // Mobile filter visibility state
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   // Get filter values from URL
   const [priceRange, setPriceRange] = useState([
@@ -108,8 +112,8 @@ export default function ProductFilters({  brands = [], maxPrice = 1000 }: Produc
     setInStock(checked === true)
   }
 
-  return (
-    <div className="sticky top-20 space-y-6">
+  const FilterContent = () => (
+    <div className="space-y-6">
       <div>
         <h3 className="font-medium text-lg mb-4">Filters</h3>
         <Button variant="outline" size="sm" className="mb-6" onClick={clearFilters}>
@@ -130,24 +134,6 @@ export default function ProductFilters({  brands = [], maxPrice = 1000 }: Produc
             </div>
           </AccordionContent>
         </AccordionItem>
-
-        {/* <AccordionItem value="category">
-          <AccordionTrigger>Category</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-2">
-              {categories.map((category) => (
-                <div key={category} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`category-${category}`}
-                    checked={selectedCategories.includes(category)}
-                    onCheckedChange={() => toggleCategory(category)}
-                  />
-                  <Label htmlFor={`category-${category}`}>{category}</Label>
-                </div>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem> */}
 
         <AccordionItem value="brand">
           <AccordionTrigger>Brand</AccordionTrigger>
@@ -180,5 +166,53 @@ export default function ProductFilters({  brands = [], maxPrice = 1000 }: Produc
         </AccordionItem>
       </Accordion>
     </div>
+  )
+
+  return (
+    <>
+      {/* Mobile Filter Button */}
+      <Button
+        variant="outline"
+        className="lg:hidden mb-4 w-full"
+        onClick={() => setIsFilterOpen(true)}
+      >
+        <Filter className="mr-2 h-4 w-4" />
+        Filters
+      </Button>
+
+      {/* Mobile Overlay */}
+      {isFilterOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-background">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Filters</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsFilterOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <FilterContent />
+            </div>
+            <div className="p-4 border-t">
+              <Button
+                className="w-full"
+                onClick={() => setIsFilterOpen(false)}
+              >
+                Apply Filters
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Sidebar - Always Visible */}
+      <div className="hidden lg:block sticky top-20">
+        <FilterContent />
+      </div>
+    </>
   )
 }

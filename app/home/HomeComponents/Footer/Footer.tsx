@@ -13,16 +13,15 @@ export default function Footer() {
             className="
               font-extrabold 
               text-center 
-              leading-none
+              leading-loose
               text-[4rem] 
               sm:text-[6rem] 
               md:text-[8rem] 
               lg:text-[12rem] 
               xl:text-[14rem]
-              text-gray-900
             "
           >
-            KEEBHOUS
+            KEEBHOUSE
           </h1>
         </div>
       </div>
