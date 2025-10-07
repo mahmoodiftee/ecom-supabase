@@ -7,8 +7,11 @@ import { supabasePublic } from "@/utils/supabase/publicClient";
 export default async function KeyboardsPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
+  // Await the searchParams promise
+  const params = await searchParams;
+
   const { data } = await supabasePublic
     .schema('public')
     .from('keyboards')
@@ -16,12 +19,12 @@ export default async function KeyboardsPage({
 
   const keyboards = (data ?? []) as Products[];
 
-  const query = searchParams.q || "";
-  const minPrice = Number(searchParams.minPrice) || 0;
-  const maxPrice = Number(searchParams.maxPrice) || 20000;
-  const categories = searchParams.categories?.split(",") || [];
-  const brands = searchParams.brands?.split(",") || [];
-  const inStock = searchParams.inStock === "true";
+  const query = params.q || "";
+  const minPrice = Number(params.minPrice) || 0;
+  const maxPrice = Number(params.maxPrice) || 20000;
+  const categories = params.categories?.split(",") || [];
+  const brands = params.brands?.split(",") || [];
+  const inStock = params.inStock === "true";
 
   const AllBrands: string[] = [];
   keyboards.forEach((keyboard) => {
@@ -30,9 +33,7 @@ export default async function KeyboardsPage({
     }
   });
 
-
   let filteredProducts = [...keyboards];
-
 
   // Filters
   if (query) {

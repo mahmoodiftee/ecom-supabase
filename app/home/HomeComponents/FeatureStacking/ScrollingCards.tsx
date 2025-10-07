@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import FeatureSection from "../FreatureSection/page";
+import FeatureSection from "../FreatureSection/FeatureSection";
 import Max from "@/components/max";
 import { OpacityTransition } from "@/components/ui/Transitions";
 

@@ -2,29 +2,24 @@ import { notFound } from "next/navigation";
 import ProductDetail from "@/components/product-detail";
 import { supabasePublic } from "@/utils/supabase/publicClient";
 
-export default async function KeyboardsPage({
+export default async function KeyboardDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { data: keyboards, error } = await supabasePublic
+  // Await the params promise
+  const { id } = await params;
+
+  const { data: product, error } = await supabasePublic
     .from("keyboards")
-    .select("*");
+    .select("*")
+    .eq("id", id)
+    .single();
 
   if (error) {
-    console.error("Error fetching data from Supabase:", error);
+    console.error("Error fetching product from Supabase:", error);
     notFound();
   }
-
-  if (!keyboards || keyboards.length === 0) {
-    notFound();
-  }
-
-  const { id } = await params;
-  // console.log("Product ID from URL:", id);
-
-  // Ensure both `id` and `product.id` are of the same type
-  const product = keyboards.find((p) => String(p.id) === String(id));
 
   if (!product) {
     console.log("Product not found:", id);

@@ -8,16 +8,17 @@ import { Button } from "@/components/ui/button";
 import { generateReceipt } from "@/lib/pdf-generator";
 import Max from "@/components/max";
 import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Download, ListOrdered, ShoppingBag, User } from "lucide-react";
+import { Download, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+
 interface CheckmarkProps {
   size?: number;
   strokeWidth?: number;
   color?: string;
   className?: string;
 }
+
 export interface ReceiptDetails {
   receiptNumber: string;
   date: Date;
@@ -50,7 +51,7 @@ const draw = {
   }),
 };
 
-export function Checkmark({
+function Checkmark({
   size = 100,
   strokeWidth = 2,
   color = "currentColor",
@@ -98,28 +99,39 @@ export function Checkmark({
 export default function SuccessPage() {
   const [items, setItems] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
   const router = useRouter();
   const { clearCart } = useCart();
 
   useEffect(() => {
-    const orderData = localStorage.getItem("order");
-    localStorage.removeItem("cart");
-    clearCart();
-    if (!orderData) {
-      router.push("/");
-      return;
-    }
-    if (orderData) {
-      const { items, totalPrice } = JSON.parse(orderData);
-      setItems(items);
-      setTotalPrice(totalPrice);
-    } else {
-      console.log("No order found in localStorage");
-    }
-  }, []);
+    // Only access localStorage on client side
+    if (typeof window !== 'undefined') {
+      const orderData = localStorage.getItem("order");
 
+      // Clear cart from localStorage and context
+      localStorage.removeItem("cart");
+      clearCart();
 
-  const details = {
+      if (!orderData) {
+        router.push("/");
+        return;
+      }
+
+      try {
+        const { items, totalPrice } = JSON.parse(orderData);
+        setItems(items || []);
+        setTotalPrice(totalPrice || 0);
+      } catch (error) {
+        console.error("Error parsing order data:", error);
+        router.push("/");
+        return;
+      }
+
+      setIsLoaded(true);
+    }
+  }, [router, clearCart]);
+
+  const details: ReceiptDetails = {
     receiptNumber: "REC-2025-001",
     date: new Date(),
     customerName: "Mahmood Iftee",
@@ -132,10 +144,24 @@ export default function SuccessPage() {
     companyWebsite: "www.capekeys.com",
     notes: "Thank you for your business!",
   };
-  console.log(Math.round(totalPrice));
+
   const handleDownloadReceipt = () => {
     generateReceipt(items, totalPrice, details);
   };
+
+  // Show loading state until client-side data is loaded
+  if (!isLoaded) {
+    return (
+      <Max>
+        <Card className="w-full max-w-md md:max-w-3xl mx-auto pt-4 md:p-6 min-h-[300px] flex flex-col justify-center dark:bg-zinc-900 bg-white dark:border-zinc-800 border-zinc-200 backdrop-blur-sm">
+          <CardContent className="space-y-4 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+            <p className="text-sm text-muted-foreground">Loading your order...</p>
+          </CardContent>
+        </Card>
+      </Max>
+    );
+  }
 
   return (
     <Max>
@@ -192,25 +218,25 @@ export default function SuccessPage() {
             >
               Payment Submitted
             </motion.h2>
-            <motion.h2
+            <motion.div
               className="text-lg dark:text-zinc-100 text-zinc-900 tracking-tighter font-semibold uppercase"
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.4 }}
             >
               <div className="flex gap-2 justify-center my-3 mb-6">
-                <Button className="" onClick={handleDownloadReceipt}>
+                <Button onClick={handleDownloadReceipt}>
                   <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   Download Receipt
                 </Button>
                 <Link href="/profile?tab=orders">
-                  <Button variant={"outline"} className="">
+                  <Button variant="outline">
                     <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     View Orders
                   </Button>
                 </Link>
               </div>
-            </motion.h2>
+            </motion.div>
 
             <div className="flex items-center gap-4">
               <motion.div
@@ -238,10 +264,10 @@ export default function SuccessPage() {
                     </div>
                   </div>
                   <div className="w-full h-px bg-gradient-to-r from-transparent dark:via-zinc-700 via-zinc-300 to-transparent" />
-                  <div className="w-full flex-1 overflow-y-auto space-y-4 ">
+                  <div className="w-full flex-1 overflow-y-auto space-y-4">
                     {items.map((item: any, i: number) => (
                       <div key={i} className="w-full">
-                        <div key={i} className="w-full flex gap-4">
+                        <div className="w-full flex gap-4">
                           <div className="h-20 w-20 relative rounded overflow-hidden flex-shrink-0">
                             <Image
                               src={
@@ -255,7 +281,7 @@ export default function SuccessPage() {
                           </div>
                           <div className="flex-1 flex flex-col justify-start items-start">
                             <h3 className="font-medium text-start leading-tight text-sm md:text-lg">
-                              {item.title.length > 5
+                              {item.title.length > 35
                                 ? `${item.title.slice(0, 35)}...`
                                 : item.title}
                             </h3>
@@ -264,7 +290,9 @@ export default function SuccessPage() {
                             </p>
                           </div>
                         </div>
-                        <div className="my-4 w-full h-px bg-gradient-to-r from-transparent dark:via-zinc-700 via-zinc-300 to-transparent" />
+                        {i < items.length - 1 && (
+                          <div className="my-4 w-full h-px bg-gradient-to-r from-transparent dark:via-zinc-700 via-zinc-300 to-transparent" />
+                        )}
                       </div>
                     ))}
                   </div>
