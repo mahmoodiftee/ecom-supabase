@@ -7,8 +7,23 @@ export default function Footer() {
         className="relative h-[150px]"
         style={{ clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)" }}
       >
-        <div className="fixed -bottom-32 w-full flex justify-start pl-10 items-center">
-          <h1 className="text-[14rem] font-extrabold">KEEBHOUS</h1>
+        {/* Use absolute instead of fixed, and center text */}
+        <div className="absolute inset-0 flex justify-center items-center">
+          <h1
+            className="
+              font-extrabold 
+              text-center 
+              leading-none
+              text-[4rem] 
+              sm:text-[6rem] 
+              md:text-[8rem] 
+              lg:text-[12rem] 
+              xl:text-[14rem]
+              text-gray-900
+            "
+          >
+            KEEBHOUS
+          </h1>
         </div>
       </div>
     </div>

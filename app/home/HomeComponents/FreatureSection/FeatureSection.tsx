@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/Typography";
 
 interface SectionProps {
-  // id: string;
   images: string[];
   title: string;
   description: string;
@@ -24,12 +23,21 @@ export default function FeatureSection({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [hasAnimatedIn, setHasAnimatedIn] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const transitionTime = 4000;
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Track if we've animated in
   useEffect(() => {
@@ -94,6 +102,10 @@ export default function FeatureSection({
     },
   };
 
+  // Responsive indicator sizes
+  const activeWidth = isMobile ? 40 : 60;
+  const inactiveSize = isMobile ? 6 : 8;
+
   return (
     <motion.section
       ref={ref}
@@ -102,10 +114,11 @@ export default function FeatureSection({
       variants={containerVariants}
       className="w-full flex flex-col justify-center"
     >
-      <div className="mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div className="mx-auto w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10 items-center">
+          {/* Image Section */}
           <div
-            className={`relative h-[500px] overflow-hidden rounded-lg ${imageOrder}`}
+            className={`relative h-64 sm:h-80 md:h-96 lg:h-[500px] overflow-hidden rounded-lg ${imageOrder}`}
           >
             <AnimatePresence custom={currentImageIndex}>
               <motion.div
@@ -119,7 +132,6 @@ export default function FeatureSection({
                 }}
                 className="absolute inset-0 w-full h-full"
                 style={{
-                  // Remove any potential gaps
                   left: 0,
                   right: 0,
                   top: 0,
@@ -134,7 +146,6 @@ export default function FeatureSection({
                   alt={`Slide ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
                   style={{
-                    // Ensure image fills the container completely
                     width: "100%",
                     height: "100%",
                     objectFit: "cover",
@@ -144,14 +155,15 @@ export default function FeatureSection({
               </motion.div>
             </AnimatePresence>
 
-            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-3 z-20">
+            {/* Progress Indicators */}
+            <div className="absolute bottom-4 sm:bottom-5 md:bottom-6 left-0 right-0 flex justify-center gap-2 md:gap-3 z-20 px-4">
               {section.images.map((_, index) => (
                 <div key={index} className="flex items-center">
                   {index === currentImageIndex ? (
                     <motion.div
-                      className="h-2 bg-white dark:bg-black rounded-full"
-                      initial={{ width: 8 }}
-                      animate={{ width: 60 }}
+                      className="h-1.5 md:h-2 bg-white dark:bg-black rounded-full"
+                      initial={{ width: inactiveSize }}
+                      animate={{ width: activeWidth }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
                     >
                       <motion.div
@@ -161,16 +173,17 @@ export default function FeatureSection({
                     </motion.div>
                   ) : (
                     <motion.div
-                      className="h-2 w-2 bg-black/70 dark:bg-white/70 rounded-full"
+                      className="h-1.5 md:h-2 bg-black/70 dark:bg-white/70 rounded-full"
+                      style={{ width: inactiveSize }}
                       initial={{
                         width:
                           index ===
-                          (currentImageIndex - 1 + section.images.length) %
+                            (currentImageIndex - 1 + section.images.length) %
                             section.images.length
-                            ? 60
-                            : 8,
+                            ? activeWidth
+                            : inactiveSize,
                       }}
-                      animate={{ width: 8 }}
+                      animate={{ width: inactiveSize }}
                       transition={{ duration: 0.3, ease: "easeIn" }}
                     />
                   )}
@@ -179,11 +192,12 @@ export default function FeatureSection({
             </div>
           </div>
 
-          <div className={`flex flex-col space-y-6 ${contentOrder}`}>
-            <div className="text-3xl font-bold tracking-tight md:text-4xl">
+          {/* Content Section */}
+          <div className={`flex flex-col space-y-4 md:space-y-5 lg:space-y-6 ${contentOrder}`}>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
               <SectionHeading>{section.title}</SectionHeading>
             </div>
-            <p className="text-muted-foreground text-lg w-5/6">
+            <p className="text-muted-foreground text-base sm:text-lg leading-relaxed w-full md:w-5/6">
               {section.description}
             </p>
             <div>

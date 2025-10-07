@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import FeatureSection from "../FreatureSection/FeatureSection";
 import Max from "@/components/max";
@@ -41,7 +41,7 @@ const cardData = [
     ],
     title: "Keycaps",
     description:
-      "High-quality keycaps in various profiles, materials, and colors. Upgrade your keyboard’s look and feel with stylish designs that match your aesthetic and typing needs.",
+      "High-quality keycaps in various profiles, materials, and colors. Upgrade your keyboard's look and feel with stylish designs that match your aesthetic and typing needs.",
   },
   {
     id: 4,
@@ -73,7 +73,7 @@ export function ScrollingCards() {
   return (
     <div className="w-full">
       <Max>
-        <div className="text-7xl font-extrabold text-center">
+        <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-center px-4">
           <OpacityTransition>We Offer</OpacityTransition>
         </div>
         {cardData.map((card, index) => (
@@ -103,7 +103,32 @@ interface CardProps {
 function Card({ card, index, totalCards }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const offsetTop = 20 + index * 20;
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Responsive offset calculation
+  const getOffset = () => {
+    if (isMobile) return 8 + index * 8;
+    if (isTablet) return 15 + index * 15;
+    return 20 + index * 20;
+  };
+
+  const getStickyTop = () => {
+    if (isMobile) return '60px';
+    if (isTablet) return '70px';
+    return '80px';
+  };
 
   const { scrollYProgress } = useScroll({
     target: cardRef,
@@ -113,23 +138,24 @@ function Card({ card, index, totalCards }: CardProps) {
   const scale = useTransform(
     scrollYProgress,
     [0.3, 1],
-    [1.05, index === totalCards - 1 ? 0.85 : 0.85]
+    [1.05, index === totalCards - 1 ? (isMobile ? 0.95 : 0.85) : (isMobile ? 0.95 : 0.85)]
   );
 
   return (
     <div
       ref={containerRef}
-      className="sticky top-20"
+      className="sticky"
       style={{
-        paddingTop: `${offsetTop}px`,
-        marginBottom: index === totalCards - 1 ? "250px" : "0",
-        height: index === totalCards - 1 ? "500px" : "500px",
+        top: getStickyTop(),
+        paddingTop: `${getOffset()}px`,
+        marginBottom: index === totalCards - 1 ? (isMobile ? "80px" : "150px") : "0",
       }}
     >
       <motion.div
         ref={cardRef}
-        className="flex overflow-hidden shadow-lg origin-top md:flex-row flex-col border border-[#eaeaea]
-         dark:border-[#3f3f3f] bg-[#F2F2F2] dark:bg-[#2B2B2B] rounded-2xl my-6 p-6"
+        className="flex overflow-hidden shadow-lg origin-top flex-col md:flex-row border border-[#eaeaea]
+         dark:border-[#3f3f3f] bg-[#F2F2F2] dark:bg-[#2B2B2B] rounded-xl md:rounded-2xl 
+         my-3 sm:my-4 md:my-6 p-4 sm:p-5 md:p-6 mx-3 sm:mx-4 md:mx-0"
         style={{
           scale,
         }}
