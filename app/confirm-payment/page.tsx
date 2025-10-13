@@ -3,15 +3,24 @@
 import { useCart } from "@/context/cart-context";
 import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import { getUserProfile } from "@/utils/profile";
+import { toast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 export default function ConfirmPaymentPage() {
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
@@ -20,7 +29,6 @@ export default function ConfirmPaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     handleResize();
@@ -42,34 +50,44 @@ export default function ConfirmPaymentPage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (user?.id) {
         const profile = await getUserProfile(user.id);
         setUser(profile);
 
         const { data: methods } = await supabase
-          .from('payment_methods')
-          .select('*')
-          .eq('user_id', user.id);
+          .from("payment_methods")
+          .select("*")
+          .eq("user_id", user.id);
 
         setPaymentMethods(methods || []);
       }
     };
+
     fetchUser();
-  }, []);
+  }, [router]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <h1 className="text-center underline text-3xl font-bold mb-6 text-foreground">Checkout</h1>
+      <h1 className="text-center underline text-3xl font-bold mb-6 text-foreground">
+        Checkout
+      </h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Order Summary */}
         <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
-          <h2 className="text-xl font-semibold mb-6 text-foreground">Order Summary</h2>
+          <h2 className="text-xl font-semibold mb-6 text-foreground">
+            Order Summary
+          </h2>
 
           <div className="space-y-4">
             {items.map((item) => (
-              <div key={item.id} className=" pb-4 border-b border-border last:border-0">
+              <div
+                key={item.id}
+                className=" pb-4 border-b border-border last:border-0"
+              >
                 <div className="flex flex-col md:flex-row items-center gap-4 flex-1">
                   <img
                     src={item.image}
@@ -78,8 +96,12 @@ export default function ConfirmPaymentPage() {
                   />
                   <div className="flex flex-col items-start justify-between gap-4">
                     <div>
-                      <p className="text-muted-foreground">${item.price.toFixed(0)}</p>
-                      <h3 className="font-medium text-foreground">{item.title}</h3>
+                      <p className="text-muted-foreground">
+                        ${item.price.toFixed(0)}
+                      </p>
+                      <h3 className="font-medium text-foreground">
+                        {item.title}
+                      </h3>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -87,7 +109,9 @@ export default function ConfirmPaymentPage() {
                         variant="outline"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
                         disabled={item.quantity <= 1}
                       >
                         <Minus className="h-3 w-3" />
@@ -97,7 +121,9 @@ export default function ConfirmPaymentPage() {
                         variant="outline"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
                       >
                         <Plus className="h-3 w-3" />
                       </Button>
@@ -134,15 +160,22 @@ export default function ConfirmPaymentPage() {
 
         {/* Payment Section */}
         <div className="bg-card rounded-xl shadow-sm p-6 border border-border">
-          <h2 className="text-xl font-semibold mb-6 text-foreground">Payment Details</h2>
+          <h2 className="text-xl font-semibold mb-6 text-foreground">
+            Payment Details
+          </h2>
 
           <Elements stripe={stripePromise}>
-            <CheckoutForm totalPrice={totalPrice} user={user} paymentMethods={paymentMethods} />
+            <CheckoutForm
+              totalPrice={totalPrice}
+              user={user}
+              paymentMethods={paymentMethods}
+            />
           </Elements>
 
           <div className="mt-6 pt-4 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              Your payment is securely processed by Stripe. We don't store your credit card details.
+              Your payment is securely processed by Stripe. We don't store your
+              credit card details.
             </p>
           </div>
         </div>
@@ -151,17 +184,34 @@ export default function ConfirmPaymentPage() {
   );
 }
 
-const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number; user: any, paymentMethods: any[] }) => {
+const CheckoutForm = ({
+  totalPrice,
+  user,
+  paymentMethods,
+}: {
+  totalPrice: number;
+  user: any;
+  paymentMethods: any[];
+}) => {
   const { items, clearCart } = useCart();
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
-
+  const { theme } = useTheme();
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (!stripe || !elements) {
+      return;
+    }
+    if (!user) {
+      alert("Please log in to proceed with payment.");
+
+      setTimeout(() => {
+        router.push("/sign-in");
+      }, 1000);
+
       return;
     }
 
@@ -182,11 +232,14 @@ const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number
 
       const { clientSecret } = data;
 
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement)!,
-        },
-      });
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: elements.getElement(CardElement)!,
+          },
+        }
+      );
 
       if (error) {
         alert(`Payment failed: ${error.message}`);
@@ -199,7 +252,7 @@ const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number
             totalPrice: Math.round(totalPrice),
             email: user?.email,
             user_id: user?.id,
-            user: user
+            user: user,
           }),
         });
 
@@ -237,11 +290,15 @@ const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number
   return (
     <form onSubmit={handleSubmit}>
       <div className="mb-6">
-        <label className="block text-sm font-medium text-foreground mb-2">Card Details</label>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          Card Details
+        </label>
         <div className="border border-input rounded-lg p-3">
           {paymentMethods.length > 0 && (
             <div className="mb-6">
-              <label className="block text-sm font-medium text-foreground mb-2">Saved Payment Methods</label>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Saved Payment Methods
+              </label>
               <div className="space-y-2">
                 {paymentMethods.map((method, idx) => (
                   <button
@@ -249,10 +306,16 @@ const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number
                     type="button"
                     className="w-full border rounded-lg p-1.5 md:p-3 flex justify-between items-center hover:bg-accent transition"
                   >
-                    <span className="text-xs md:text-base text-foreground">{method.card_number}</span>
+                    <span className="text-xs md:text-base text-foreground">
+                      {method.card_number}
+                    </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs md:text-base text-muted-foreground">{method.expiry}</span>
-                      <span className="text-xs md:text-base text-muted-foreground">{method.cvc}</span>
+                      <span className="text-xs md:text-base text-muted-foreground">
+                        {method.expiry}
+                      </span>
+                      <span className="text-xs md:text-base text-muted-foreground">
+                        {method.cvc}
+                      </span>
                     </div>
                   </button>
                 ))}
@@ -264,20 +327,19 @@ const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number
               options={{
                 style: {
                   base: {
-                    fontSize: '16px',
-                    color: '#ffffff',
-                    '::placeholder': {
-                      color: '#ffffff',
+                    fontSize: "16px",
+                    color: theme === "dark" ? "#ffffff" : "#000000",
+                    "::placeholder": {
+                      color: theme === "dark" ? "#9ca3af" : "#6b7280",
                     },
                   },
                   invalid: {
-                    color: '#9e2146',
+                    color: theme === "dark" ? "#f87171" : "#b91c1c",
                   },
                 },
               }}
             />
           </div>
-
         </div>
       </div>
 
@@ -288,9 +350,25 @@ const CheckoutForm = ({ totalPrice, user, paymentMethods }: { totalPrice: number
       >
         {isProcessing ? (
           <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin h-5 w-5 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              className="animate-spin h-5 w-5 text-primary-foreground"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             Processing Payment...
           </span>

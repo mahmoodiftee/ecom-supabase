@@ -14,6 +14,7 @@ import {
   faFacebookF,
   faInstagram,
 } from "@fortawesome/free-brands-svg-icons";
+import HeaderAuth from "../header-auth";
 
 interface NavLink {
   title: string;
@@ -56,6 +57,7 @@ export default function MobileNav({ navlinks }: MobileNavProps) {
       <div className="w-full mx-auto flex justify-end items-center text-sm">
         <div className="flex justify-between items-center">
           <SearchButton />
+          <HeaderAuth />
           <CartIcon />
           <ThemeSwitcher />
         </div>

@@ -12,6 +12,9 @@ import { UserProvider } from "@/context/ProfileContext";
 import { UserProvider as UserProvider2 } from "@/context/UserContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { createClient } from "@/utils/supabase/server";
+import { Search } from "@/components/search";
+import { supabasePublic } from "@/utils/supabase/publicClient";
+import { Products } from "@/types/products";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -60,9 +63,19 @@ export default async function RootLayout({
     }
   }
 
+  const { data } = await supabasePublic
+    .schema("public")
+    .from("keyboards")
+    .select("*");
+
+  const keyboards = (data ?? []) as Products[];
+
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
-      <body className="bg-background text-foreground" cz-shortcut-listen="false">
+      <body
+        className="bg-background text-foreground"
+        cz-shortcut-listen="false"
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -77,8 +90,13 @@ export default async function RootLayout({
                     <div className="flex-1 w-full flex flex-col items-center">
                       {role !== "admin" && (
                         <>
-                          <DesktopNav navlinks={navlinks.filter(link => link.title !== "Home")} />
+                          <DesktopNav
+                            navlinks={navlinks.filter(
+                              (link) => link.title !== "Home"
+                            )}
+                          />
                           <MobileNav navlinks={navlinks} />
+                          <Search keyboards={keyboards} />
                         </>
                       )}
 

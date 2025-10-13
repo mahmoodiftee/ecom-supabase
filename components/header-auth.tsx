@@ -1,21 +1,18 @@
 "use client";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LogInIcon, User } from "lucide-react";
+import {  User } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function HeaderAuth() {
-
+  const router = useRouter();
   return (
-    <div className="flex items-center gap-4">
-
-      <Link href="/profile">
-        <Button variant="ghost" size="sm" asChild>
-          <div className="flex items-center gap-1">
-            <User className="h-6 w-6" />
-          </div>
-        </Button>
-      </Link>
-
-    </div>
+    <Button
+      onClick={() => router.push("/profile")}
+      variant="ghost"
+      size="icon"
+      aria-label="Search"
+    >
+      <User className="h-6 w-6" />
+    </Button>
   );
 }

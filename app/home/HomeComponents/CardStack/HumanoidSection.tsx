@@ -1,144 +1,132 @@
-'use client'
-import { OpacityTransition } from "@/components/ui/Transitions";
-import React, { useEffect, useRef, useState } from "react";
+"use client"
+import { OpacityTransition } from "@/components/ui/Transitions"
+import { useEffect, useRef, useState } from "react"
 
 const CustomizationSection = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const cardsContainerRef = useRef<HTMLDivElement>(null);
-  const [activeCardIndex, setActiveCardIndex] = useState(0);
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
-  const ticking = useRef(false);
-  const lastScrollY = useRef(0);
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const cardsContainerRef = useRef<HTMLDivElement>(null)
+  const [activeCardIndex, setActiveCardIndex] = useState(0)
+  const [isIntersecting, setIsIntersecting] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isTablet, setIsTablet] = useState(false)
+  const ticking = useRef(false)
+  const lastScrollY = useRef(0)
 
-  // Responsive card style with dynamic height
   const getCardStyle = () => {
-    const baseHeight = isMobile ? "30vh" : isTablet ? "55vh" : "60vh";
-    const maxHeight = isMobile ? "400px" : isTablet ? "500px" : "600px";
-    const borderRadius = isMobile ? "12px" : isTablet ? "16px" : "20px";
+    const baseHeight = isMobile ? "35vh" : isTablet ? "55vh" : "60vh"
+    const maxHeight = isMobile ? "450px" : isTablet ? "500px" : "600px"
+    const borderRadius = isMobile ? "12px" : isTablet ? "16px" : "20px"
 
     return {
       width: "100%",
       height: baseHeight,
       maxHeight: maxHeight,
       borderRadius: borderRadius,
-      transition:
-        "transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1)",
+      transition: "transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1)",
       willChange: "transform, opacity",
-    };
-  };
+    }
+  }
 
-  // Check screen size
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 640);
-      setIsTablet(window.innerWidth >= 640 && window.innerWidth < 1024);
-    };
-
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-
-  useEffect(() => {
-    // Create intersection observer to detect when section is in view
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        setIsIntersecting(entry.isIntersecting);
-      },
-      { threshold: 0.1 } // Start observing when 10% of element is visible
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+      setIsMobile(window.innerWidth < 640)
+      setIsTablet(window.innerWidth >= 640 && window.innerWidth < 1024)
     }
 
-    // Optimized scroll handler using requestAnimationFrame
+    checkScreenSize()
+    window.addEventListener("resize", checkScreenSize)
+    return () => window.removeEventListener("resize", checkScreenSize)
+  }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries
+        setIsIntersecting(entry.isIntersecting)
+      },
+      { threshold: 0.1 },
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
     const handleScroll = () => {
       if (!ticking.current) {
-        lastScrollY.current = window.scrollY;
+        lastScrollY.current = window.scrollY
 
         window.requestAnimationFrame(() => {
-          if (!sectionRef.current) return;
+          if (!sectionRef.current) return
 
-          const sectionRect = sectionRef.current.getBoundingClientRect();
-          const viewportHeight = window.innerHeight;
-          const totalScrollDistance = isMobile ? viewportHeight * 1.5 : viewportHeight * 2;
+          const sectionRect = sectionRef.current.getBoundingClientRect()
+          const viewportHeight = window.innerHeight
+          const totalScrollDistance = isMobile ? viewportHeight * 1.2 : viewportHeight * 2
 
-          // Calculate the scroll progress
-          let progress = 0;
+          let progress = 0
           if (sectionRect.top <= 0) {
-            progress = Math.min(
-              1,
-              Math.max(0, Math.abs(sectionRect.top) / totalScrollDistance)
-            );
+            progress = Math.min(1, Math.max(0, Math.abs(sectionRect.top) / totalScrollDistance))
           }
 
-          // Determine which card should be visible based on progress
           if (progress >= 0.66) {
-            setActiveCardIndex(2);
+            setActiveCardIndex(2)
           } else if (progress >= 0.33) {
-            setActiveCardIndex(1);
+            setActiveCardIndex(1)
           } else {
-            setActiveCardIndex(0);
+            setActiveCardIndex(0)
           }
 
-          ticking.current = false;
-        });
+          ticking.current = false
+        })
 
-        ticking.current = true;
+        ticking.current = true
       }
-    };
+    }
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Initial calculation
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    handleScroll()
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", handleScroll)
       if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
+        observer.unobserve(sectionRef.current)
       }
-    };
-  }, [isMobile]);
+    }
+  }, [isMobile])
 
-  // Card visibility based on active index instead of direct scroll progress
-  const isFirstCardVisible = isIntersecting;
-  const isSecondCardVisible = activeCardIndex >= 1;
-  const isThirdCardVisible = activeCardIndex >= 2;
+  const isFirstCardVisible = isIntersecting
+  const isSecondCardVisible = activeCardIndex >= 1
+  const isThirdCardVisible = activeCardIndex >= 2
 
-  // Responsive transform values
   const getTransformValues = (cardIndex: number, isVisible: boolean, isActive: boolean) => {
-    if (!isVisible) return { translateY: isMobile ? "150px" : "200px", scale: 0.9 };
+    if (!isVisible) return { translateY: isMobile ? "150px" : "200px", scale: 0.9 }
 
     const mobileValues = {
       0: { translateY: "60px", scale: 0.9 },
       1: { translateY: isActive ? "35px" : "30px", scale: 0.95 },
       2: { translateY: isActive ? "10px" : "5px", scale: 1 },
-    };
+    }
 
     const tabletValues = {
       0: { translateY: "75px", scale: 0.9 },
       1: { translateY: isActive ? "45px" : "40px", scale: 0.95 },
       2: { translateY: isActive ? "12px" : "8px", scale: 1 },
-    };
+    }
 
     const desktopValues = {
       0: { translateY: "90px", scale: 0.9 },
       1: { translateY: isActive ? "55px" : "45px", scale: 0.95 },
       2: { translateY: isActive ? "15px" : "0", scale: 1 },
-    };
+    }
 
-    if (isMobile) return mobileValues[cardIndex as keyof typeof mobileValues];
-    if (isTablet) return tabletValues[cardIndex as keyof typeof tabletValues];
-    return desktopValues[cardIndex as keyof typeof desktopValues];
-  };
+    if (isMobile) return mobileValues[cardIndex as keyof typeof mobileValues]
+    if (isTablet) return tabletValues[cardIndex as keyof typeof tabletValues]
+    return desktopValues[cardIndex as keyof typeof desktopValues]
+  }
 
-  const cardStyle = getCardStyle();
+  const cardStyle = getCardStyle()
 
   return (
-    <div ref={sectionRef} className="relative" style={{ height: isMobile ? "250vh" : isTablet ? "275vh" : "300vh" }}>
+    <div ref={sectionRef} className="relative" style={{ height: isMobile ? "180vh" : isTablet ? "275vh" : "300vh" }}>
       <section
         className="w-full min-h-screen sticky overflow-hidden px-3 sm:px-4 md:px-0"
         style={{ top: isMobile ? "40px" : isTablet ? "50px" : "40px" }}
@@ -160,15 +148,12 @@ const CustomizationSection = () => {
               </div>
             </div>
 
-            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-center px-2">
+            <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-center px-2">
               <OpacityTransition>Build Your Dream Setup</OpacityTransition>
             </div>
           </div>
 
-          <div
-            ref={cardsContainerRef}
-            className="relative flex-1 perspective-1000"
-          >
+          <div ref={cardsContainerRef} className="relative flex-1 perspective-1000">
             {/* First Card - Custom Keyboards */}
             <div
               className={`absolute inset-0 overflow-hidden shadow-lg sm:shadow-xl ${isFirstCardVisible ? "animate-card-enter" : ""}`}
@@ -191,7 +176,7 @@ const CustomizationSection = () => {
 
               <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8 h-full flex items-center">
                 <div className="max-w-lg">
-                  <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
+                  <h3 className="text-xl sm:text-2xl md:text-2xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
                     We Provide Verity of Mechanical Keyboards.
                   </h3>
                   <p className="hidden md:block text-sm sm:text-base text-white/80 leading-relaxed">
@@ -224,7 +209,7 @@ const CustomizationSection = () => {
 
               <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8 h-full flex items-center">
                 <div className="max-w-lg">
-                  <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
+                  <h3 className="text-xl sm:text-2xl md:text-2xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
                     Premium Switches for Every Typing Style
                   </h3>
                   <p className="hidden md:block text-sm sm:text-base text-white/80 leading-relaxed">
@@ -257,9 +242,8 @@ const CustomizationSection = () => {
 
               <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8 h-full flex items-center">
                 <div className="max-w-lg">
-                  <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
-                    Artisan Keycaps That Make a{" "}
-                    <span className="text-[#FC4D0A]">Statement</span>
+                  <h3 className="text-xl sm:text-2xl md:text-2xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
+                    Artisan Keycaps That Make a <span className="text-[#FC4D0A]">Statement</span>
                   </h3>
                   <p className="hidden md:block text-sm sm:text-base text-white/80 leading-relaxed">
                     Express yourself with custom designs, premium materials, and stunning colorways
@@ -271,7 +255,7 @@ const CustomizationSection = () => {
         </div>
       </section>
     </div>
-  );
-};
+  )
+}
 
-export default CustomizationSection;
+export default CustomizationSection
