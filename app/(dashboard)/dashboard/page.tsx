@@ -263,7 +263,7 @@ export default function DashboardPage() {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 md:p-6 md:pb-2">
                 <CardTitle className="text-xs sm:text-sm font-medium">
                   {stat.title}
                 </CardTitle>

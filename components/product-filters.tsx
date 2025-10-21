@@ -21,57 +21,56 @@ export default function ProductFilters({ brands = [], maxPrice = 1000 }: Product
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  // Mobile filter visibility state
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-  // Get filter values from URL
   const [priceRange, setPriceRange] = useState([
     Number(searchParams.get("minPrice") || 0),
     Number(searchParams.get("maxPrice") || maxPrice),
   ])
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    searchParams.get("categories")?.split(",") || []
+    searchParams.get("categories")?.split(",").filter(Boolean) || []
   )
 
   const [selectedBrands, setSelectedBrands] = useState<string[]>(
-    searchParams.get("brands")?.split(",") || []
+    searchParams.get("brands")?.split(",").filter(Boolean) || []
   )
 
   const [inStock, setInStock] = useState(searchParams.get("inStock") === "true")
 
-  // Apply filters
   const applyFilters = () => {
     const params = new URLSearchParams(searchParams)
 
-    // Price range
     params.set("minPrice", priceRange[0].toString())
     params.set("maxPrice", priceRange[1].toString())
-    // Brands
+    
     if (selectedBrands.length > 0) {
       params.set("brands", selectedBrands.join(","))
     } else {
       params.delete("brands")
     }
 
-    // Stock
+    if (selectedCategories.length > 0) {
+      params.set("categories", selectedCategories.join(","))
+    } else {
+      params.delete("categories")
+    }
+
     if (inStock) {
       params.set("inStock", "true")
     } else {
       params.delete("inStock")
     }
 
-    router.push(`${pathname}?${params.toString()}`)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
   }
 
-  // Clear all filters
   const clearFilters = () => {
     setPriceRange([0, maxPrice])
     setSelectedCategories([])
     setSelectedBrands([])
     setInStock(false)
 
-    // Remove filter params from URL
     const params = new URLSearchParams(searchParams)
     params.delete("minPrice")
     params.delete("maxPrice")
@@ -79,17 +78,15 @@ export default function ProductFilters({ brands = [], maxPrice = 1000 }: Product
     params.delete("brands")
     params.delete("inStock")
 
-    // Keep search query if exists
     const query = params.get("q")
 
     if (query) {
-      router.push(`${pathname}?q=${query}`)
+      router.push(`${pathname}?q=${query}`, { scroll: false })
     } else {
-      router.push(pathname)
+      router.push(pathname, { scroll: false })
     }
   }
 
-  // Apply filters when values change
   useEffect(() => {
     const debouncedApplyFilters = setTimeout(() => {
       applyFilters()
@@ -126,10 +123,17 @@ export default function ProductFilters({ brands = [], maxPrice = 1000 }: Product
           <AccordionTrigger>Price Range</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4 pt-2">
-              <Slider value={priceRange} max={maxPrice} step={10} onValueChange={setPriceRange} />
+              <Slider 
+                value={priceRange} 
+                max={maxPrice} 
+                min={0}
+                step={1} 
+                minStepsBetweenThumbs={1}
+                onValueChange={setPriceRange}
+              />
               <div className="flex items-center justify-between">
-                <p className="text-sm">${priceRange[0]}</p>
-                <p className="text-sm">${priceRange[1]}</p>
+                <p className="text-sm font-medium">${priceRange[0]}</p>
+                <p className="text-sm font-medium">${priceRange[1]}</p>
               </div>
             </div>
           </AccordionContent>
@@ -146,7 +150,7 @@ export default function ProductFilters({ brands = [], maxPrice = 1000 }: Product
                     checked={selectedBrands.includes(brand)}
                     onCheckedChange={() => toggleBrand(brand)}
                   />
-                  <Label htmlFor={`brand-${brand}`}>{brand}</Label>
+                  <Label htmlFor={`brand-${brand}`} className="cursor-pointer">{brand}</Label>
                 </div>
               ))}
             </div>
@@ -159,7 +163,7 @@ export default function ProductFilters({ brands = [], maxPrice = 1000 }: Product
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Checkbox id="in-stock" checked={inStock} onCheckedChange={handleStockChange} />
-                <Label htmlFor="in-stock">In Stock</Label>
+                <Label htmlFor="in-stock" className="cursor-pointer">In Stock</Label>
               </div>
             </div>
           </AccordionContent>
@@ -170,7 +174,6 @@ export default function ProductFilters({ brands = [], maxPrice = 1000 }: Product
 
   return (
     <>
-      {/* Mobile Filter Button */}
       <Button
         variant="outline"
         className="lg:hidden mb-4 w-full"
@@ -180,7 +183,6 @@ export default function ProductFilters({ brands = [], maxPrice = 1000 }: Product
         Filters
       </Button>
 
-      {/* Mobile Overlay */}
       {isFilterOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-background">
           <div className="flex flex-col h-full">
@@ -209,7 +211,6 @@ export default function ProductFilters({ brands = [], maxPrice = 1000 }: Product
         </div>
       )}
 
-      {/* Desktop Sidebar - Always Visible */}
       <div className="hidden lg:block sticky top-20">
         <FilterContent />
       </div>

@@ -1,260 +1,145 @@
 "use client"
-import { OpacityTransition } from "@/components/ui/Transitions"
-import { useEffect, useRef, useState } from "react"
+
+import { motion } from "framer-motion"
+import { Keyboard, HdmiPort as EthernetPort, Palette } from "lucide-react"
 
 const CustomizationSection = () => {
-  const sectionRef = useRef<HTMLDivElement>(null)
-  const cardsContainerRef = useRef<HTMLDivElement>(null)
-  const [activeCardIndex, setActiveCardIndex] = useState(0)
-  const [isIntersecting, setIsIntersecting] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [isTablet, setIsTablet] = useState(false)
-  const ticking = useRef(false)
-  const lastScrollY = useRef(0)
+  const features = [
+    {
+      icon: Keyboard,
+      title: "Premium Mechanical Keyboards",
+      description:
+        "Curated selection from the world's most trusted brands. Authentic, high-quality keyboards that enthusiasts and professionals rely on.",
+    },
+    {
+      icon: EthernetPort,
+      title: "Quality Switches",
+      description:
+        "Choose from tactile, linear, or clicky switches. Premium options from Cherry MX, Gateron, Kailh, and more to match your typing preference.",
+    },
+    {
+      icon: Palette,
+      title: "Custom Keycaps",
+      description:
+        "Personalize with extensive keycaps collection. Multiple profiles, materials, and color schemes to create your perfect aesthetic.",
+    },
+  ]
 
-  const getCardStyle = () => {
-    const baseHeight = isMobile ? "35vh" : isTablet ? "55vh" : "60vh"
-    const maxHeight = isMobile ? "450px" : isTablet ? "500px" : "600px"
-    const borderRadius = isMobile ? "12px" : isTablet ? "16px" : "20px"
-
-    return {
-      width: "100%",
-      height: baseHeight,
-      maxHeight: maxHeight,
-      borderRadius: borderRadius,
-      transition: "transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1)",
-      willChange: "transform, opacity",
-    }
-  }
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 640)
-      setIsTablet(window.innerWidth >= 640 && window.innerWidth < 1024)
-    }
-
-    checkScreenSize()
-    window.addEventListener("resize", checkScreenSize)
-    return () => window.removeEventListener("resize", checkScreenSize)
-  }, [])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries
-        setIsIntersecting(entry.isIntersecting)
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
       },
-      { threshold: 0.1 },
-    )
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    const handleScroll = () => {
-      if (!ticking.current) {
-        lastScrollY.current = window.scrollY
-
-        window.requestAnimationFrame(() => {
-          if (!sectionRef.current) return
-
-          const sectionRect = sectionRef.current.getBoundingClientRect()
-          const viewportHeight = window.innerHeight
-          const totalScrollDistance = isMobile ? viewportHeight * 1.2 : viewportHeight * 2
-
-          let progress = 0
-          if (sectionRect.top <= 0) {
-            progress = Math.min(1, Math.max(0, Math.abs(sectionRect.top) / totalScrollDistance))
-          }
-
-          if (progress >= 0.66) {
-            setActiveCardIndex(2)
-          } else if (progress >= 0.33) {
-            setActiveCardIndex(1)
-          } else {
-            setActiveCardIndex(0)
-          }
-
-          ticking.current = false
-        })
-
-        ticking.current = true
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    handleScroll()
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
-      }
-    }
-  }, [isMobile])
-
-  const isFirstCardVisible = isIntersecting
-  const isSecondCardVisible = activeCardIndex >= 1
-  const isThirdCardVisible = activeCardIndex >= 2
-
-  const getTransformValues = (cardIndex: number, isVisible: boolean, isActive: boolean) => {
-    if (!isVisible) return { translateY: isMobile ? "150px" : "200px", scale: 0.9 }
-
-    const mobileValues = {
-      0: { translateY: "60px", scale: 0.9 },
-      1: { translateY: isActive ? "35px" : "30px", scale: 0.95 },
-      2: { translateY: isActive ? "10px" : "5px", scale: 1 },
-    }
-
-    const tabletValues = {
-      0: { translateY: "75px", scale: 0.9 },
-      1: { translateY: isActive ? "45px" : "40px", scale: 0.95 },
-      2: { translateY: isActive ? "12px" : "8px", scale: 1 },
-    }
-
-    const desktopValues = {
-      0: { translateY: "90px", scale: 0.9 },
-      1: { translateY: isActive ? "55px" : "45px", scale: 0.95 },
-      2: { translateY: isActive ? "15px" : "0", scale: 1 },
-    }
-
-    if (isMobile) return mobileValues[cardIndex as keyof typeof mobileValues]
-    if (isTablet) return tabletValues[cardIndex as keyof typeof tabletValues]
-    return desktopValues[cardIndex as keyof typeof desktopValues]
+    },
   }
 
-  const cardStyle = getCardStyle()
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  }
+
+  const cardHoverVariants = {
+    rest: { y: 0, boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)" },
+    hover: {
+      y: -4,
+      boxShadow: "0 12px 24px rgba(0, 0, 0, 0.15)",
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+  }
+
+  const iconFloatVariants = {
+    float: {
+      y: [0, -6, 0],
+      transition: {
+        duration: 3,
+        repeat: Number.POSITIVE_INFINITY,
+        ease: "easeInOut",
+      },
+    },
+  }
 
   return (
-    <div ref={sectionRef} className="relative" style={{ height: isMobile ? "180vh" : isTablet ? "275vh" : "300vh" }}>
-      <section
-        className="w-full min-h-screen sticky overflow-hidden px-3 sm:px-4 md:px-0"
-        style={{ top: isMobile ? "40px" : isTablet ? "50px" : "40px" }}
-        id="customization"
-      >
-        <div className="h-full flex flex-col">
-          <div className="mb-2 md:mb-3">
-            <div className="flex items-center justify-center gap-3 sm:gap-4 mb-2 md:mb-2 pt-6 sm:pt-5 md:pt-4">
-              <div
-                className="pulse-chip opacity-0 animate-fade-in text-xs sm:text-sm"
-                style={{
-                  animationDelay: "0.1s",
-                }}
+    <section className="w-full py-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-16"
+        >
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-sm font-medium text-muted-foreground mb-6">
+            ✨ Customization
+          </span>
+          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">Build Your Dream Setup</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Everything you need to create or upgrade your mechanical keyboard. Choose your layout, switches, and keycaps
+            to build something uniquely yours.
+          </p>
+        </motion.div>
+
+        {/* Features Grid */}
+        <motion.div
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {features.map((feature, index) => (
+            <motion.div key={feature.title} variants={itemVariants} className="group">
+              <motion.div
+                initial="rest"
+                whileHover="hover"
+                variants={cardHoverVariants}
+                className="h-full p-6 rounded-lg border border-border bg-card transition-colors duration-300"
               >
-                <span className="inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-pulse-500 text-white mr-2 text-xs">
-                  02
-                </span>
-                <span>Customization</span>
-              </div>
-            </div>
+                <div className="mb-4">
+                  <motion.div
+                    className="w-10 h-10 rounded-md bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors"
+                    variants={iconFloatVariants}
+                    animate="float"
+                  >
+                    <feature.icon className="w-5 h-5 text-accent" />
+                  </motion.div>
+                </div>
+                <h4 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
 
-            <div className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-center px-2">
-              <OpacityTransition>Build Your Dream Setup</OpacityTransition>
+        {/* Additional Info */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-12 p-6 rounded-lg bg-muted/30 border border-border"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex-1">
+              <h4 className="text-base font-semibold text-foreground mb-2">Why Choose Us</h4>
+              <p className="text-sm text-muted-foreground">
+                We partner with leading manufacturers to bring you authentic products. Expert curation, secure payments
+                powered by Stripe, and fast shipping with order tracking.
+              </p>
             </div>
           </div>
-
-          <div ref={cardsContainerRef} className="relative flex-1 perspective-1000">
-            {/* First Card - Custom Keyboards */}
-            <div
-              className={`absolute inset-0 overflow-hidden shadow-lg sm:shadow-xl ${isFirstCardVisible ? "animate-card-enter" : ""}`}
-              style={{
-                ...cardStyle,
-                zIndex: 10,
-                transform: `translateY(${getTransformValues(0, isFirstCardVisible, false).translateY}) scale(${getTransformValues(0, isFirstCardVisible, false).scale})`,
-                opacity: isFirstCardVisible ? 0.9 : 0,
-              }}
-            >
-              <div
-                className="absolute inset-0 z-0 bg-gradient-to-b from-pulse-900/40 to-dark-900/80"
-                style={{
-                  backgroundImage: "url('/background-section1.png')",
-                  backgroundSize: "cover",
-                  backgroundPosition: "top center",
-                  backgroundBlendMode: "overlay",
-                }}
-              ></div>
-
-              <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8 h-full flex items-center">
-                <div className="max-w-lg">
-                  <h3 className="text-xl sm:text-2xl md:text-2xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
-                    We Provide Verity of Mechanical Keyboards.
-                  </h3>
-                  <p className="hidden md:block text-sm sm:text-base text-white/80 leading-relaxed">
-                    Choose your layout, switches, and keycaps to build a keyboard that's uniquely yours
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Second Card - Premium Switches */}
-            <div
-              className={`absolute inset-0 overflow-hidden shadow-lg sm:shadow-xl ${isSecondCardVisible ? "animate-card-enter" : ""}`}
-              style={{
-                ...cardStyle,
-                zIndex: 20,
-                transform: `translateY(${getTransformValues(1, isSecondCardVisible, activeCardIndex === 1).translateY}) scale(${getTransformValues(1, isSecondCardVisible, activeCardIndex === 1).scale})`,
-                opacity: isSecondCardVisible ? 1 : 0,
-                pointerEvents: isSecondCardVisible ? "auto" : "none",
-              }}
-            >
-              <div
-                className="absolute inset-0 z-0 bg-gradient-to-b from-pulse-900/40 to-dark-900/80"
-                style={{
-                  backgroundImage: "url('/background-section2.png')",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  backgroundBlendMode: "overlay",
-                }}
-              ></div>
-
-              <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8 h-full flex items-center">
-                <div className="max-w-lg">
-                  <h3 className="text-xl sm:text-2xl md:text-2xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
-                    Premium Switches for Every Typing Style
-                  </h3>
-                  <p className="hidden md:block text-sm sm:text-base text-white/80 leading-relaxed">
-                    From tactile to linear, clicky to silent - find the perfect feel for your fingers
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Third Card - Artisan Keycaps */}
-            <div
-              className={`absolute inset-0 overflow-hidden shadow-lg sm:shadow-xl ${isThirdCardVisible ? "animate-card-enter" : ""}`}
-              style={{
-                ...cardStyle,
-                zIndex: 30,
-                transform: `translateY(${getTransformValues(2, isThirdCardVisible, activeCardIndex === 2).translateY}) scale(${getTransformValues(2, isThirdCardVisible, activeCardIndex === 2).scale})`,
-                opacity: isThirdCardVisible ? 1 : 0,
-                pointerEvents: isThirdCardVisible ? "auto" : "none",
-              }}
-            >
-              <div
-                className="absolute inset-0 z-0 bg-gradient-to-b from-pulse-900/40 to-dark-900/80"
-                style={{
-                  backgroundImage: "url('/background-section3.png')",
-                  backgroundSize: "cover",
-                  backgroundPosition: "bottom center",
-                  backgroundBlendMode: "overlay",
-                }}
-              ></div>
-
-              <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8 h-full flex items-center">
-                <div className="max-w-lg">
-                  <h3 className="text-xl sm:text-2xl md:text-2xl lg:text-4xl font-display text-white font-bold leading-tight mb-3 sm:mb-4">
-                    Artisan Keycaps That Make a <span className="text-[#FC4D0A]">Statement</span>
-                  </h3>
-                  <p className="hidden md:block text-sm sm:text-base text-white/80 leading-relaxed">
-                    Express yourself with custom designs, premium materials, and stunning colorways
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+        </motion.div>
+      </div>
+    </section>
   )
 }
 

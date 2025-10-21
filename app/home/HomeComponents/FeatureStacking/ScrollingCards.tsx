@@ -153,7 +153,7 @@ function Card({ card, index, totalCards }: CardProps) {
     >
       <motion.div
         ref={cardRef}
-        className="flex overflow-hidden shadow-lg origin-top flex-col md:flex-row border border-[#eaeaea]
+        className="flex overflow-hidden  origin-top flex-col md:flex-row border border-[#eaeaea]
          dark:border-[#3f3f3f] bg-[#F2F2F2] dark:bg-[#2B2B2B] rounded-xl md:rounded-2xl 
          my-3 sm:my-4 md:my-6 p-4 sm:p-5 md:p-6 mx-3 sm:mx-4 md:mx-0"
         style={{

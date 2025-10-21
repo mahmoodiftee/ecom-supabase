@@ -1,15 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { AnimatePresence, motion, stagger, useAnimate } from "framer-motion"
+import { motion } from "framer-motion"
 import ProductCard from "@/components/product-card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Products } from "@/types/products"
-import { useEffect } from "react"
 
 export default function ProductGrid({ products }: { products: Products[] }) {
   const [sortOrder, setSortOrder] = useState("featured")
-  const [scope, animate] = useAnimate()
 
   const sortedProducts = [...products].sort((a, b) => {
     if (sortOrder === "price-asc") return a.price - b.price
@@ -19,19 +17,8 @@ export default function ProductGrid({ products }: { products: Products[] }) {
     return 0
   })
 
-  useEffect(() => {
-    animate(
-      ".product-card",
-      { opacity: 1, y: 0 },
-      {
-        duration: 0.4,
-        delay: stagger(0.1, { startDelay: 0.1 }),
-      }
-    )
-  }, [sortedProducts, animate])
-
   return (
-    <div ref={scope}>
+    <div>
       <div className="flex justify-between items-center mb-6">
         <p className="text-sm text-muted-foreground">Showing {products.length} products</p>
         <Select value={sortOrder} onValueChange={setSortOrder}>
@@ -49,22 +36,23 @@ export default function ProductGrid({ products }: { products: Products[] }) {
 
       <motion.div 
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        layout
       >
-        <AnimatePresence>
-          {sortedProducts.map((product, index) => (
-            <motion.div
-              key={product.id}
-              className="product-card"
-              initial={{ opacity: 0, y: 20 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {sortedProducts.map((product, index) => (
+          <motion.div
+            key={product.id}
+            layout
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ 
+              duration: 0.3,
+              delay: index * 0.05
+            }}
+          >
+            <ProductCard product={product} />
+          </motion.div>
+        ))}
       </motion.div>
     </div>
   );
