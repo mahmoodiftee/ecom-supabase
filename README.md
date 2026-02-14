@@ -1,12 +1,7 @@
-Nice, I’ll make it **ready-to-use and polished**. Just copy–paste this into a `README.md` file in your repo 👇
-
----
-
-# 🛒 E-Commerce Platform (Supabase + Stripe)
+# 🛒 E-Commerce Platform
 
 A modern, full-featured e-commerce platform built with **Supabase** (serverless backend) and **Stripe** (secure payment gateway). The application is fully responsive, optimized for mobile devices, and includes a powerful admin panel for managing products, orders, and payments.
 
----
 
 ## Features
 
